@@ -8,7 +8,7 @@
 #' @return random matrix
 #'
 #' @examples
-#' simulate_uniform_matrix(100, 2, -1, 1)
+#' # .simulate_uniform_matrix(ncol=2, nrow=100, lower=-1, upper=1)
 .simulate_uniform_matrix = function(ncol, nrow, lower, upper) {
   m = matrix(runif(nrow*ncol, min = lower, max = upper), nrow = nrow, ncol = ncol)
   return(m)
@@ -24,7 +24,7 @@
 #' @return random matrix
 #'
 #' @examples
-#' simulate_normal_matrix(100, 2, 10, 3)
+#' # .simulate_normal_matrix(ncol=100, nrow=2, mu=10, sigma=3)
 .simulate_normal_matrix = function(ncol, nrow, mu, sigma) {
   m = matrix(rnorm(nrow*ncol, mean = mu, sd = sigma), nrow = nrow, ncol = ncol)
   return(m)

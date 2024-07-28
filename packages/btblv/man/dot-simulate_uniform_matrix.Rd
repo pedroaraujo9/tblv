@@ -22,5 +22,5 @@ random matrix
 Simulate matrix from a uniform distribution
 }
 \examples{
-simulate_uniform_matrix(100, 2, -1, 1)
+# .simulate_uniform_matrix(ncol=2, nrow=100, lower=-1, upper=1)
 }

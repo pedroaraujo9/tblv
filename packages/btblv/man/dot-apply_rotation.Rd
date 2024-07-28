@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{.apply_rotation}
 \alias{.apply_rotation}
-\title{Apply the transformation for each element of the posterior}
+\title{Apply the Procrustean transformation for each element of the posterior}
 \usage{
 .apply_rotation(post_sample, rotation_list)
 }
@@ -15,7 +15,7 @@
 array with the rotated posterior sample
 }
 \description{
-Apply the transformation for each element of the posterior
+Apply the Procrustean transformation for each element of the posterior
 }
 \examples{
 #

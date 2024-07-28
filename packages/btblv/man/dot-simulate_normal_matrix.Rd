@@ -22,5 +22,5 @@ random matrix
 Simualte matrix from normal distribution
 }
 \examples{
-simulate_normal_matrix(100, 2, 10, 3)
+# .simulate_normal_matrix(ncol=100, nrow=2, mu=10, sigma=3)
 }
