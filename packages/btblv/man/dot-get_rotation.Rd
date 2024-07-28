@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{.get_rotation}
 \alias{.get_rotation}
-\title{Compute the procrustean matching rotation for each iteration of the posterior}
+\title{Compute the Procrustean matching rotation for each iteration of the posterior}
 \usage{
 .get_rotation(post_sample, reference_matrix)
 }
@@ -15,7 +15,7 @@
 list with the Procrustean transform for each iteration
 }
 \description{
-Compute the procrustean matching rotation for each iteration of the posterior
+Compute the Procrustean matching rotation for each iteration of the posterior
 }
 \examples{
 #
