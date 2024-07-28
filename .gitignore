@@ -3,3 +3,4 @@
 .RData
 .Ruserdata
 *config.yaml
+test-build.R
