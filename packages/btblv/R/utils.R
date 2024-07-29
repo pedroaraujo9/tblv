@@ -152,10 +152,11 @@
 #' @param x numeric value between 0, and 1
 #'
 #' @return logit of the numeric
+#' @export
 #'
 #' @examples
 #' # .logit(0.1)
-.logit = function(x) {
+logit = function(x) {
   log(x/(1-x))
 }
 
@@ -164,9 +165,10 @@
 #' @param x numeric real value
 #'
 #' @return invese of the logit
+#' @export
 #'
 #' @examples
 #' # .inv_logit(10)
-.inv_logit = function(x) {
+inv_logit = function(x) {
   1/(1+exp(-x))
 }
