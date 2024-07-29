@@ -41,7 +41,7 @@
 #' @return list of list with the initial values for each chain
 #'
 #' @examples
-#'
+#'#
 .generate_init_values = function(btblv_data, K, chains, precision = "single", seed) {
   set.seed(seed)
 
@@ -62,8 +62,8 @@
   if(precision == "single") {
     init_list = purrr::map(1:chains, ~{
       list(
-        E = simulate_normal_matrix(nrow = n, ncol = K, mu = 0, sigma = 0.1),
-        alpha = simulate_normal_matrix(nrow = J, ncol = K, mu = 0, sigma = 0.1),
+        E = .simulate_normal_matrix(nrow = n, ncol = K, mu = 0, sigma = 0.1),
+        alpha = .simulate_normal_matrix(nrow = J, ncol = K, mu = 0, sigma = 0.1),
         beta = beta_mle + rnorm(n=J, sd = 0.1),
         log_sigma = rnorm(Ng, 0, 0.1),
         phi = runif(Ng, -0.1, 0.1),
@@ -73,8 +73,8 @@
   }else if(precision == "multiple"){
     init_list = purrr::map(1:chains, ~{
       list(
-        E = simulate_normal_matrix(nrow = n, ncol = K, mu = 0, sigma = 0.1),
-        alpha = simulate_normal_matrix(nrow = J, ncol = K, mu = 0, sigma = 0.1),
+        E = .simulate_normal_matrix(nrow = n, ncol = K, mu = 0, sigma = 0.1),
+        alpha = .simulate_normal_matrix(nrow = J, ncol = K, mu = 0, sigma = 0.1),
         beta = beta_mle + rnorm(n=J, sd = 0.1),
         log_sigma = rnorm(Ng, 0, 0.1),
         phi = runif(Ng, -0.1, 0.1),
@@ -147,3 +147,26 @@
   return(new_post_sample)
 }
 
+#' Logit function
+#'
+#' @param x numeric value between 0, and 1
+#'
+#' @return logit of the numeric
+#'
+#' @examples
+#' # .logit(0.1)
+.logit = function(x) {
+  log(x/(1-x))
+}
+
+#' Inverse logit function
+#'
+#' @param x numeric real value
+#'
+#' @return invese of the logit
+#'
+#' @examples
+#' # .inv_logit(10)
+.inv_logit = function(x) {
+  1/(1+exp(-x))
+}

@@ -23,3 +23,6 @@ list of list with the initial values for each chain
 \description{
 Generate init values for the MCMC chains
 }
+\examples{
+#
+}
