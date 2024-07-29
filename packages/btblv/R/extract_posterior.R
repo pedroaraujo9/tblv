@@ -16,9 +16,9 @@ extract_posterior = function(btblv_fit) {
   post_sample_chains = stan_fit %>% rstan::extract(permuted = FALSE)
 
   # rotate params
-  eigen_decomp = btblv_data$data_list_stan$x %>% cor() %>% eigen()
-  ref_matrix = eigen_decomp$vectors[, 1:K]
-  rotation_list = .get_rotation(post_sample$alpha, ref_matrix)
+  eigen_decomp = btblv_data$data_list_stan$x %>% logit %>% cor() %>% eigen()
+  reference_matrix = eigen_decomp$vectors[, 1:K]
+  rotation_list = .get_rotation(post_sample$alpha, reference_matrix)
   post_sample$rot_alpha = .apply_rotation(post_sample$alpha, rotation_list)
   post_sample$rot_theta = .apply_rotation(post_sample$theta, rotation_list)
 
