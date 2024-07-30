@@ -1,5 +1,1 @@
-btblv-precision=single-K=10.rds
-btblv-precision=single-K=9.rds
-btblv-precision=single-K=8.rds
-btblv-precision=single-K=7.rds
-btblv-precision=single-K=6.rds
+btblv-precision=single-K=1.rds

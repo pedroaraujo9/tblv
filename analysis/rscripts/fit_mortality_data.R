@@ -1,6 +1,7 @@
 library(btblv)
 library(dplyr)
 library(stringr)
+library(googledrive)
 
 #### parameters from the terminal ####
 args = commandArgs(trailingOnly = T)[-1]
@@ -20,7 +21,10 @@ warmup = args_list$warmup %>% as.numeric()
 chains = args_list$chains %>% as.numeric()
 thin = args_list$thin %>% as.numeric()
 precision = args_list$precision 
+
 path_to_save = args_list$path_to_save 
+save_gdrive = args_list$save_gdrive %>% as.logical()
+gdrive_folder_id = args_list$gdrive_folder_id
 
 #### check if the model was already fitted ####
 model_name = paste0(
@@ -31,9 +35,9 @@ model_name = paste0(
 print(model_name)
 
 #### fit the model in case the model has not been fitted ####
-path_to_save = "analysis/models/"
-models_saved = readLines(paste0(path_to_save, "models-saved-list.txt"))
-models_saved
+models_saved = readLines(paste0(path_to_save, "/models-saved-list.txt"))
+print(models_saved)
+
 if(!(model_name %in% models_saved)) {
   #### data ####
   data("lf")
@@ -61,12 +65,25 @@ if(!(model_name %in% models_saved)) {
                   cores = chains,
                   seed = 1)
   
-  saveRDS(fit, paste0(path_to_save, model_name))
+  saveRDS(fit, paste0(path_to_save, "/",model_name))
+  
+  if(save_gdrive == TRUE) {
+    drive_deauth()
+    drive_auth_configure(path = "credentials.json")
+    drive_auth()
+    
+    drive_upload(media = paste0(path_to_save, "/",model_name), 
+                 path = as_id(gdrive_folder_id),
+                 overwrite = TRUE)
+    
+    file.remove(paste0(path_to_save, "/",model_name))
+  }
   
   # updating list with models saved
   c(model_name, models_saved) %>%
-  writeLines(paste0(path_to_save, "models-saved-list.txt"))
+    writeLines(paste0(path_to_save, "/models-saved-list.txt"))
   
 }else{
   print("Fit already exists")
 }
+
