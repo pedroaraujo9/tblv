@@ -11,21 +11,62 @@ extract_posterior = function(btblv_fit) {
 
   stan_fit = btblv_fit$stan_fit
   data = btblv_fit$btblv_data
+  K = data$data_list_stan$K
 
+  # rotate permuted params
   post_sample = stan_fit %>% rstan::extract()
-  post_sample_chains = stan_fit %>% rstan::extract(permuted = FALSE)
 
-  # rotate params
-  eigen_decomp = btblv_data$data_list_stan$x %>% logit %>% cor() %>% eigen()
+  eigen_decomp = data$data_list_stan$x %>% logit %>% cor() %>% eigen()
   reference_matrix = eigen_decomp$vectors[, 1:K]
   rotation_list = .get_rotation(post_sample$alpha, reference_matrix)
+
   post_sample$rot_alpha = .apply_rotation(post_sample$alpha, rotation_list)
   post_sample$rot_theta = .apply_rotation(post_sample$theta, rotation_list)
+  post_sample$rot_E = .apply_rotation(post_sample$E, rotation_list)
+
+  # rotate non permuted params
+  post_sample_chains = stan_fit %>% rstan::extract(permuted = FALSE)
+  chains = dim(post_sample_chains)[2]
+
+  params = c("E", "theta", "alpha", "beta", "log_kappa", "phi", "sigma", "lp__")
+  params_dims = stan_fit@par_dims
+  post_sample_chains_list = list()
+
+  for(param in params) {
+    post_sample_chains_list[[param]] = .reshape_chain_posterior(
+      post_sample_chains, param_name = param, param_dims = params_dims[[param]]
+    )
+  }
+
+  post_sample_chains_list$rot_alpha = post_sample_chains_list$alpha
+  post_sample_chains_list$rot_theta = post_sample_chains_list$theta
+  post_sample_chains_list$rot_E = post_sample_chains_list$E
+
+  for(chain in 1:chains) {
+    chain_rotation_list = .get_rotation(post_sample_chains_list$alpha[, chain, ,],
+                                        reference_matrix)
+
+    post_sample_chains_list$rot_alpha[, chain, , ] = .apply_rotation(
+      post_sample_chains_list$alpha[, chain, , ], chain_rotation_list
+    )
+
+    post_sample_chains_list$rot_theta = .apply_rotation(
+      post_sample_chains_list$theta[, chain, , ], chain_rotation_list
+    )
+
+    post_sample_chains_list$rot_E = .apply_rotation(
+      post_sample_chains_list$E[, chain, , ], chain_rotation_list
+    )
+  }
 
   out = list(
     post_sample_array = post_sample,
-    post_sample_chains = post_sample_chains
+    post_sample_chains = post_sample_chains_list,
+    rotations = rotation_list
   )
 
   class(out) = "btblv_posterior"
+  return(out)
 }
+
+

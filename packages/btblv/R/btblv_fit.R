@@ -54,7 +54,7 @@ btblv_fit = function(btblv_data,
       ...
     )
 
-  }else if(precision == "multiple"){
+  }else if(precision == "specific"){
     fit = rstan::sampling(
       stanmodels$time_BLV,
       data = btblv_data$data_list_stan,
