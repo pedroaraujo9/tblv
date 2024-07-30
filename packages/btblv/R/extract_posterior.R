@@ -32,12 +32,16 @@ extract_posterior = function(btblv_fit) {
   params_dims = stan_fit@par_dims
   post_sample_chains_list = list()
 
+  # reshape array to look similar to the permuted one
   for(param in params) {
     post_sample_chains_list[[param]] = .reshape_chain_posterior(
-      post_sample_chains, param_name = param, param_dims = params_dims[[param]]
+      post_sample_chains,
+      param_name = param,
+      param_dims = params_dims[[param]]
     )
   }
 
+  # rotates for each chain
   post_sample_chains_list$rot_alpha = post_sample_chains_list$alpha
   post_sample_chains_list$rot_theta = post_sample_chains_list$theta
   post_sample_chains_list$rot_E = post_sample_chains_list$E
@@ -59,6 +63,7 @@ extract_posterior = function(btblv_fit) {
     )
   }
 
+  # creates object of the class btblv_posterior
   out = list(
     post_sample_array = post_sample,
     post_sample_chains = post_sample_chains_list,
