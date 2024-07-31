@@ -12,16 +12,16 @@
 #' @source <https://www.mortality.org/>
 "hmd_data"
 
-#' List with fit examples
+#' List with some fits for examples
 #'
-#' A list with 4 btblv_fit objects...
+#' A list with btblv_fit objects
 #'
 #' @format ## `example_fit`
-#' A data frame with 7,240 rows and 60 columns:
+#' A list with two data.frame with mortality data from the Human mortality Database
 #' \describe{
-#'   \item{country}{Country name}
-#'   \item{iso2, iso3}{2 & 3 letter ISO country codes}
+#'   \item{country_name}{Country name}
 #'   \item{year}{Year}
 #'   ...
 #' }
+#' @source <https://www.mortality.org/>
 "example_fit"
