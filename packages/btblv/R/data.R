@@ -1,19 +1,27 @@
-#' Mortality rates from the Human Mortality Database (HMD)
+#' List with data mortality rates from the HMD
 #'
-#' Data with age-specific mortality rates and probability of death for
-#' different countries over time from the human mortality database
+#' A list with two data.frames...
 #'
-#' @format data.frame `lf`
-#' A data frame with 23088 rows and 8 columns:
+#' @format ## `hmd_data`
+#' A list with two data.frame with mortality data from the Human mortality Database
 #' \describe{
-#'   \item{year}{Country name}
-#'   \item{age}{age group x for [x, x+5)}
-#'   \item{mx}{central mortality rate}
-#'   \item{qx}{probability of death}
-#'   \item{openinterval}{bool indicating with the age group interval is +inf open}
-#'   \item{country_code}{country code}
-#'   \item{country}{country name}
-#'   \item{date_extract}{date of the extraction from HMD}
+#'   \item{country_name}{Country name}
+#'   \item{year}{Year}
+#'   ...
 #' }
 #' @source <https://www.mortality.org/>
-"lf"
+"hmd_data"
+
+#' List with fit examples
+#'
+#' A list with 4 btblv_fit objects...
+#'
+#' @format ## `example_fit`
+#' A data frame with 7,240 rows and 60 columns:
+#' \describe{
+#'   \item{country}{Country name}
+#'   \item{iso2, iso3}{2 & 3 letter ISO country codes}
+#'   \item{year}{Year}
+#'   ...
+#' }
+"example_fit"

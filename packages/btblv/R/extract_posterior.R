@@ -48,19 +48,36 @@ extract_posterior = function(btblv_fit, add_btblv_fit = FALSE) {
   post_sample_chains_list$rot_E = post_sample_chains_list$E
 
   for(chain in 1:chains) {
-    chain_rotation_list = .get_rotation(post_sample_chains_list$alpha[, chain, ,],
-                                        reference_matrix)
+
+    if(K == 1) {
+      alpha_array = .add_last_dimension(post_sample_chains_list$alpha[, chain, ,])
+      theta_array = .add_last_dimension(post_sample_chains_list$theta[, chain, ,])
+      E_array = .add_last_dimension(post_sample_chains_list$E[, chain, ,])
+
+    }else{
+      alpha_array = post_sample_chains_list$alpha[, chain, ,]
+      theta_array = post_sample_chains_list$theta[, chain, ,]
+      E_array = post_sample_chains_list$E[, chain, ,]
+    }
+
+    chain_rotation_list = .get_rotation(
+      alpha_array,
+      reference_matrix
+    )
 
     post_sample_chains_list$rot_alpha[, chain, , ] = .apply_rotation(
-      post_sample_chains_list$alpha[, chain, , ], chain_rotation_list
+      alpha_array,
+      chain_rotation_list
     )
 
     post_sample_chains_list$rot_theta = .apply_rotation(
-      post_sample_chains_list$theta[, chain, , ], chain_rotation_list
+      theta_array,
+      chain_rotation_list
     )
 
     post_sample_chains_list$rot_E = .apply_rotation(
-      post_sample_chains_list$E[, chain, , ], chain_rotation_list
+      E_array,
+      chain_rotation_list
     )
   }
 
