@@ -7,10 +7,11 @@
 #'
 #' @examples
 #' #
-posterior_summary = function(btblv_posterior) {
+posterior_summary = function(btblv_posterior, cred_mass = 0.95) {
   posterior_mean = list(
     alpha = .compute_posterior_mean(btblv_posterior$post_sample_array$rot_alpha),
     beta = .compute_posterior_mean(btblv_posterior$post_sample_array$beta),
+    log_kappa = .compute_posterior_mean(btblv_posterior$post_sample_array$log_kappa),
     kappa = .compute_posterior_mean(btblv_posterior$post_sample_array$log_kappa %>% exp()),
     theta = .compute_posterior_mean(btblv_posterior$post_sample_array$rot_theta),
     E = .compute_posterior_mean(btblv_posterior$post_sample_array$rot_E),
@@ -18,5 +19,115 @@ posterior_summary = function(btblv_posterior) {
     sigma = .compute_posterior_mean(btblv_posterior$post_sample_array$sigma)
   )
 
-  return(posterior_mean)
+  # original columns names
+  item_col_name = btblv_posterior$btblv_data$columns[1]
+  group_col_name = btblv_posterior$btblv_data$columns[2]
+  time_col_name = btblv_posterior$btblv_data$columns[3]
+
+  # maps names for the inds
+  ind_id = btblv_posterior$btblv_data$data %>%
+    select(ind_num, group, time) %>%
+    distinct()
+
+  colnames(ind_id)[-1] = c(group_col_name, time_col_name)
+
+  # maps names for the item
+  item_id = btblv_posterior$btblv_data$data %>%
+    select(item_num, item) %>%
+    distinct()
+
+  colnames(item_id)[-1] = item_col_name
+
+  # maps names for the groups
+  group_size = btblv_posterior$btblv_data$data %>%
+    select(ind_num, group_num) %>%
+    distinct() %>%
+    group_by(group_num) %>%
+    summarise(N = n()) %>%
+    ungroup()
+
+  group_id = btblv_posterior$btblv_data$data %>%
+    select(group_num, group) %>%
+    distinct() %>%
+    left_join(group_size, by = c("group_num"))
+
+  colnames(group_id)[2] = group_col_name
+
+  # compute posterior summaries
+  alpha = btblv_posterior$post_sample_array$rot_alpha %>%
+    .get_summary_df(cred_mass = cred_mass) %>%
+    right_join(item_id, by = c("id" = "item_num")) %>%
+    select(-id)
+
+  beta = btblv_posterior$post_sample_array$beta %>%
+    .get_summary_df(cred_mass = cred_mass) %>%
+    right_join(item_id, by = c("id" = "item_num")) %>%
+    select(-id)
+
+
+  log_kappa_summary_df = btblv_posterior$post_sample_array$log_kappa %>%
+    .get_summary_df()
+
+  if(nrow(log_kappa_summary_df) == 1) {
+    log_kappa = log_kappa_summary_df
+
+  }else{
+    log_kappa = log_kappa_summary_df %>%
+      right_join(item_id, by = c("id" = "item_num")) %>%
+      select(-id)
+  }
+
+  kappa_summary_df = btblv_posterior$post_sample_array$log_kappa %>%
+    exp() %>%
+    .get_summary_df()
+
+  if(nrow(kappa_summary_df) == 1) {
+    kappa = kappa_summary_df
+
+  }else{
+    kappa = kappa_summary_df %>%
+      right_join(item_id, by = c("id" = "item_num")) %>%
+      select(-id)
+  }
+
+
+  theta = btblv_posterior$post_sample_array$rot_theta %>%
+    .get_summary_df(cred_mass = cred_mass) %>%
+    right_join(ind_id, by = c("id" = "ind_num")) %>%
+    select(-id)
+
+  E = btblv_posterior$post_sample_array$rot_E %>%
+    .get_summary_df(cred_mass = cred_mass) %>%
+    right_join(ind_id, by = c("id" = "ind_num")) %>%
+    select(-id)
+
+  phi = btblv_posterior$post_sample_array$phi %>%
+    .get_summary_df(cred_mass = cred_mass) %>%
+    right_join(group_id, by = c("id" = "group_num")) %>%
+    select(-id)
+
+  sigma = btblv_posterior$post_sample_array$sigma %>%
+    .get_summary_df(cred_mass = cred_mass) %>%
+    right_join(group_id, by = c("id" = "group_num")) %>%
+    select(-id)
+
+  posterior_summary_df = list(
+    alpha = alpha,
+    beta = beta,
+    log_kappa = log_kappa,
+    kappa = kappa,
+    theta = theta,
+    E = E,
+    phi = phi,
+    sigma = sigma
+  )
+
+  btblv_posterior_summary = list(
+    posterior_mean = posterior_mean,
+    posterior_summary_df = posterior_summary_df
+  )
+
+  class(btblv_posterior_summary) = "btblv_posterior_summary"
+
+  return(btblv_posterior_summary)
 }
