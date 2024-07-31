@@ -217,3 +217,44 @@ inv_logit = function(x) {
 
   return(reshaped_array)
 }
+
+#' Compute posterior mean from posterior sample rstan array
+#'
+#' @param array array with posterior sample
+#'
+#' @return posterior mean
+#'
+#' @examples
+#' #
+.compute_posterior_mean = function(array) {
+  array_dim = dim(array)
+
+  if(length(array_dim) == 3) {
+    post_mean = lapply(1:array_dim[3], function(k){
+      array[,,k] %>% colMeans()
+    }) %>%
+      do.call(cbind, .)
+
+  }else if(length(array_dim) == 2) {
+    post_mean = colMeans(array) %>% cbind()
+  }else if(length(array_dim) == 1) {
+    post_mean = mean(array)
+  }
+
+  return(post_mean)
+}
+
+#' Preserve the last shape in an array with 3 dimensions
+#'
+#' @param array array with two dimensions (n, J)
+#'
+#' @return array with dimension (n, J, 1)
+#'
+#' @examples
+#' #
+.add_last_dimension = function(array) {
+  array_dim = dim(array)
+  new_array = array(dim = c(array_dim, 1))
+  new_array[, , 1] = array
+  return(new_array)
+}
