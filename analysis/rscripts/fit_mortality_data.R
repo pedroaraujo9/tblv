@@ -40,9 +40,9 @@ print(models_saved)
 
 if(!(model_name %in% models_saved)) {
   #### data ####
-  data("lf")
+  data("hmd_data")
   
-  lf = lf %>%
+  lf = hmd_data$life_tables_5x5 %>%
     filter(year %in% seq(1950, 2015, 5)) %>%
     filter(!(country %in% c("East Germany", "West Germany", "New Zealand Maori",
                             "New Zealand Non-Maori", "England and Wales (Total Population)",
