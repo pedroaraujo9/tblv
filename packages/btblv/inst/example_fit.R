@@ -52,7 +52,7 @@ example_fit_specific_K2 = btblv_fit(data,
                                     cores = 3,
                                     seed = 1)
 
-usethis::use_data(example_fit_single_K1, overwrite = T)
+usethis::use_data(example_fit_specific_K2, overwrite = T)
 
 
 example_fit_specific_K1 = btblv_fit(data,
@@ -65,6 +65,6 @@ example_fit_specific_K1 = btblv_fit(data,
                                     cores = 3,
                                     seed = 1)
 
-usethis::use_data(example_fit_single_K1, overwrite = T)
+usethis::use_data(example_fit_specific_K1, overwrite = T)
 
 

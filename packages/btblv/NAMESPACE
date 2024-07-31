@@ -2,7 +2,9 @@
 
 S3method(print,btblv_data)
 export(btblv_fit)
+export(calc_cWAIC)
 export(create_btblv_data)
+export(extract_cond_log_like)
 export(extract_posterior)
 export(inv_logit)
 export(logit)

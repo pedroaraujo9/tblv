@@ -1,0 +1,38 @@
+#' Extract the pointwise condotional log-likelihood for the btblv model
+#'
+#' @param btblv_posterior btblv_posterior object
+#'
+#' @return matrix with the pointwise log-likelihood for each iteration of the posterior
+#' @export
+#'
+#' @examples
+#' #
+extract_cond_log_like = function(btblv_posterior) {
+  post_sample = btblv_posterior$post_sample_array
+  data_df = btblv_posterior$btblv_data$data
+  log_like_matrix = matrix(nrow = dim(post_sample$theta)[1], ncol = nrow(data_df))
+
+  for(iter in 1:nrow(log_like_matrix)) {
+
+    post_theta = cbind(post_sample$theta[iter, data_df$ind_num, ])
+    post_alpha = cbind(post_sample$alpha[iter, data_df$item_num, ])
+    post_beta = cbind(post_sample$beta[iter, data_df$item_num])
+
+    if(length(dim(post_sample$log_kappa)) == 1) {
+      post_kappa = post_sample$log_kappa[iter] %>% exp()
+    }else{
+      post_kappa = post_sample$log_kappa[iter, data_df$item_num] %>% exp()
+    }
+
+    post_mu = btblv::inv_logit(rowSums(post_theta*post_alpha) + post_beta)
+
+    log_like = stats::dbeta(data_df$y, post_mu*post_kappa, (1-post_mu)*post_kappa, log = T)
+    log_like_matrix[iter, ] = log_like
+
+  }
+
+  return(log_like_matrix)
+}
+
+
+
