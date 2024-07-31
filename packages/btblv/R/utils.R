@@ -70,7 +70,7 @@
         log_kappa = mean(precision_mle) + rnorm(n = 1, sd = 0.1)
       )
     })
-  }else if(precision == "multiple"){
+  }else if(precision == "specific"){
     init_list = purrr::map(1:chains, ~{
       list(
         E = .simulate_normal_matrix(nrow = n, ncol = K, mu = 0, sigma = 0.1),
@@ -160,7 +160,7 @@ logit = function(x) {
   log(x/(1-x))
 }
 
-#' Inverse logit function
+#' Inverse of the logit function
 #'
 #' @param x numeric real value
 #'
@@ -179,7 +179,7 @@ inv_logit = function(x) {
 #' @param param_name character with the name of the parameter you want to reshape
 #' @param param_dims numeric with the dimension of the parameter you want to reshape
 #'
-#' @return
+#' @return list where each element is the posterior sample
 #'
 #' @examples
 #' # .reshape_chain_posterior()
@@ -210,7 +210,9 @@ inv_logit = function(x) {
       }
     }
   }else if(length(param_dims) == 0) {
-    reshaped_array = chain_array[, chain, param_name]
+    for(chain in 1:chains) {
+      reshaped_array = chain_array[, chain, param_name]
+    }
   }
 
   return(reshaped_array)

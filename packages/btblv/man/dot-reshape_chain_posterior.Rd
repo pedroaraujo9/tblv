@@ -13,6 +13,9 @@
 
 \item{param_dims}{numeric with the dimension of the parameter you want to reshape}
 }
+\value{
+list where each element is the posterior sample
+}
 \description{
 Reshape non-permuted posterior to look similar to the shape of the permuted chains
 }

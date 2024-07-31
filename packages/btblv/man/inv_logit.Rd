@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{inv_logit}
 \alias{inv_logit}
-\title{Inverse logit function}
+\title{Inverse of the logit function}
 \usage{
 inv_logit(x)
 }
@@ -13,7 +13,7 @@ inv_logit(x)
 invese of the logit
 }
 \description{
-Inverse logit function
+Inverse of the logit function
 }
 \examples{
 # .inv_logit(10)
