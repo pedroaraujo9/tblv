@@ -287,7 +287,7 @@ inv_logit = function(x) {
       tibble::as_tibble() %>%
       dplyr::mutate(id = stringr::str_remove(id, "V") %>% as.integer()) %>%
       dplyr::group_by(id, K) %>%
-      dplyr::summarise(avg = mean(value),
+      dplyr::summarise(mean = mean(value),
                        sd = sd(value),
                        li = HDInterval::hdi(value, credMass = cred_mass)[1],
                        median = median(value),
@@ -302,7 +302,7 @@ inv_logit = function(x) {
       tibble::as_tibble() %>%
       dplyr::mutate(id = stringr::str_remove(id, "V") %>% as.integer()) %>%
       dplyr::group_by(id) %>%
-      dplyr::summarise(avg = mean(value),
+      dplyr::summarise(mean = mean(value),
                        sd = sd(value),
                        li = HDInterval::hdi(value, credMass = cred_mass)[1],
                        median = median(value),
@@ -312,7 +312,7 @@ inv_logit = function(x) {
   }else if(length(array_dim) == 1) {
     value = post_array
     post_summary = data.frame(
-      avg = mean(value),
+      mean = mean(value),
       sd = sd(value),
       li = HDInterval::hdi(value, credMass = cred_mass)[1] %>% as.numeric(),
       median = median(value),
