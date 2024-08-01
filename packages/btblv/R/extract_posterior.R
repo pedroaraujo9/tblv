@@ -30,7 +30,12 @@ extract_posterior = function(btblv_fit, add_btblv_fit = FALSE) {
   post_sample_chains = stan_fit %>% rstan::extract(permuted = FALSE)
   chains = dim(post_sample_chains)[2]
 
-  params = c("E", "theta", "alpha", "beta", "log_kappa", "phi", "sigma", "lp__")
+  if(precision == "single") {
+    params = c("E", "theta", "alpha", "beta", "log_kappa", "phi", "sigma", "lp__")
+  }else{
+    params = c("E", "theta", "alpha", "beta", "log_kappa", "baseline_delta", "delta", "phi", "sigma", "lp__")
+  }
+
   params_dims = stan_fit@par_dims
   post_sample_chains_list = list()
 

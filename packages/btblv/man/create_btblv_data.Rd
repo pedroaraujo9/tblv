@@ -13,23 +13,28 @@ create_btblv_data(
 )
 }
 \arguments{
-\item{df}{\code{data.frame} with resp_column, item_column, group_column, time_column}
+\item{df}{\code{data.frame} with at least \code{resp_column}, \code{item_column}, \code{group_column}, \code{time_column}.}
 
-\item{resp_col_name}{string with the name of the column with the (0, 1) data}
+\item{resp_col_name}{string with the name of the column with the (0, 1) data.}
 
-\item{item_col_name}{string with the name of the column with the items}
+\item{item_col_name}{string with the name of the column with the items.}
 
-\item{group_col_name}{string with the name of the columns with the groups}
+\item{group_col_name}{string with the name of the columns with the groups.}
 
-\item{time_col_name}{string with the name of the columns with the time}
+\item{time_col_name}{string with the name of the columns with the time.}
 }
 \value{
-btblv_data object
+btblv_data object.
 }
 \description{
 Create object with the data to be used in \code{btblv_fit}
 }
 \examples{
-data("lf")
-data = create_btblv_data(lf, "mx", "age", "country", "year")
+data("hmad_data")
+data = create_btblv_data(df = hmd_data$life_tables_5x5,
+                         resp_col_name = "mx",
+                         item_col_name = "age",
+                         group_col_name = "country",
+                         time_col_name = "year")
+
 }
