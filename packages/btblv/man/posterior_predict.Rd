@@ -25,5 +25,5 @@ and summary statistics for the observation.
 Posterior predictive sample and summary for the btblv model
 }
 \examples{
-#
+# example_fit$single_K1 \%>\% extract_posterior() \%>\% posterior_predict()
 }
