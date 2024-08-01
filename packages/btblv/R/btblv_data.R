@@ -31,6 +31,20 @@ create_btblv_data = function(df,
   )
 
   assertthat::assert_that(
+    {
+      spaces = as.data.frame(df)[, time_col_name] %>%
+        unique() %>%
+        sort() %>%
+        diff() %>%
+        unique()
+
+      length(spaces) == 1
+    },
+    msg = "time points should be equally spaced for each group of observations."
+
+  )
+
+  assertthat::assert_that(
     (class(resp_col_name) == "character") & (length(resp_col_name) == 1),
     msg = "`resp_col_name` should be a single character"
   )

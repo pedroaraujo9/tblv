@@ -1,34 +1,101 @@
-test_that("no input error", {
+test_that("input", {
+
   data("hmd_data")
 
-  lf = hmd_data$life_tables_5x5 %>%
-    dplyr::filter(year %in% seq(1950, 2015, 5)) %>%
-    dplyr::filter(!(country %in% c("East Germany", "West Germany", "New Zealand Maori",
-                                   "New Zealand Non-Maori", "England and Wales (Total Population)",
-                                   "England and Wales (Civilian Population)",
-                                   "Scotland", "Northern Ireland", "Wales")))
   expect_no_error(
-    btblv::create_btblv_data(df = lf,
-                             resp_col_name = "mx",
-                             item_col_name = "age",
-                             group_col_name = "country",
-                             time_col_name = "year")
+
+    hmd_data$life_tables_5x5 %>%
+      dplyr::filter(year %in% seq(1900, 2015, 5)) %>%
+      btblv::create_btblv_data(
+        resp_col_name = "mx",
+        item_col_name = "age",
+        group_col_name = "country",
+        time_col_name = "year"
+      )
+
   )
 
   expect_no_error(
-    btblv::create_btblv_data(df = hmd_data$life_tables_5x5,
-                             resp_col_name = "mx",
-                             item_col_name = "age",
-                             group_col_name = "country",
-                             time_col_name = "year")
+
+    hmd_data$life_tables_5x1 %>%
+      dplyr::filter(year %in% seq(1930, 2000, 1)) %>%
+      btblv::create_btblv_data(
+        resp_col_name = "mx",
+        item_col_name = "age",
+        group_col_name = "country",
+        time_col_name = "year"
+      )
+
   )
 
-  expect_no_error(
-    btblv::create_btblv_data(df = hmd_data$life_tables_5x1,
-                             resp_col_name = "mx",
-                             item_col_name = "age",
-                             group_col_name = "country",
-                             time_col_name = "year")
+  expect_error(
+
+    hmd_data$life_tables_5x5 %>%
+      btblv::create_btblv_data(
+        resp_col_name = "mx",
+        item_col_name = "age",
+        group_col_name = "country",
+        time_col_name = "year"
+      )
+
+  )
+
+
+})
+
+
+test_that("time variable", {
+
+  btblv_data_5 = hmd_data$life_tables_5x5 %>%
+    dplyr::filter(year %in% seq(1900, 2015, 5)) %>%
+    btblv::create_btblv_data(
+      resp_col_name = "mx",
+      item_col_name = "age",
+      group_col_name = "country",
+      time_col_name = "year"
+    )
+
+  btblv_data_1 = hmd_data$life_tables_5x5 %>%
+    dplyr::filter(year %in% seq(1900, 2015, 5)) %>%
+    btblv::create_btblv_data(
+      resp_col_name = "mx",
+      item_col_name = "age",
+      group_col_name = "country",
+      time_col_name = "year"
+    )
+
+  expect_identical(
+    btblv_data_5$data_list_stan$init_index,
+    btblv_data_5$data %>%
+      select(ind_num, group_num, time_num) %>%
+      arrange(group_num, time_num) %>%
+      distinct(group_num, .keep_all = T) %>%
+      .$ind_num
+  )
+
+  expect_identical(
+    btblv_data_1$data_list_stan$init_index,
+    btblv_data_1$data %>%
+      select(ind_num, group_num, time_num) %>%
+      arrange(group_num, time_num) %>%
+      distinct(group_num, .keep_all = T) %>%
+      .$ind_num
+  )
+
+  expect_false(
+    any(btblv_data_5$data_list_stan$init_index %in% btblv_data_5$data_list_stan$current_index)
+  )
+
+  expect_false(
+    any(btblv_data_1$data_list_stan$init_index %in% btblv_data_1$data_list_stan$current_index)
+  )
+
+  expect_true(
+    all((btblv_data_5$data_list_stan$current_index - btblv_data_5$data_list_stan$past_index) == 1)
+  )
+
+  expect_true(
+    all((btblv_data_1$data_list_stan$current_index - btblv_data_1$data_list_stan$past_index) == 1)
   )
 
 })
