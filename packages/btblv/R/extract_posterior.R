@@ -13,6 +13,7 @@ extract_posterior = function(btblv_fit, add_btblv_fit = FALSE) {
   stan_fit = btblv_fit$stan_fit
   data = btblv_fit$btblv_data
   K = data$data_list_stan$K
+  precision = btblv_fit$precision
 
   # rotate permuted params
   post_sample = stan_fit %>% rstan::extract()
@@ -70,12 +71,12 @@ extract_posterior = function(btblv_fit, add_btblv_fit = FALSE) {
       chain_rotation_list
     )
 
-    post_sample_chains_list$rot_theta = .apply_rotation(
+    post_sample_chains_list$rot_theta[, chain, , ] = .apply_rotation(
       theta_array,
       chain_rotation_list
     )
 
-    post_sample_chains_list$rot_E = .apply_rotation(
+    post_sample_chains_list$rot_E[, chain, , ] = .apply_rotation(
       E_array,
       chain_rotation_list
     )
@@ -86,7 +87,8 @@ extract_posterior = function(btblv_fit, add_btblv_fit = FALSE) {
     post_sample_array = post_sample,
     post_sample_chains = post_sample_chains_list,
     rotations = rotation_list,
-    btblv_data = btblv_fit$btblv_data
+    btblv_data = btblv_fit$btblv_data,
+    precision = btblv_fit$precision
   )
 
   if(add_btblv_fit == TRUE) {

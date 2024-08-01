@@ -16,5 +16,5 @@ logit of the numeric
 Logit function
 }
 \examples{
-# .logit(0.1)
+logit(0.1)
 }

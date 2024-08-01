@@ -155,7 +155,7 @@
 #' @export
 #'
 #' @examples
-#' # .logit(0.1)
+#' logit(0.1)
 logit = function(x) {
   log(x/(1-x))
 }
@@ -168,7 +168,7 @@ logit = function(x) {
 #' @export
 #'
 #' @examples
-#' # .inv_logit(10)
+#' inv_logit(10)
 inv_logit = function(x) {
   1/(1+exp(-x))
 }
@@ -210,8 +210,10 @@ inv_logit = function(x) {
       }
     }
   }else if(length(param_dims) == 0) {
+    reshaped_array = array(dim = c(iters, chains))
+
     for(chain in 1:chains) {
-      reshaped_array = chain_array[, chain, param_name]
+      reshaped_array[, chain] = chain_array[, chain, param_name]
     }
   }
 
@@ -318,4 +320,70 @@ inv_logit = function(x) {
   }
 
   return(post_summary)
+}
+
+#' Compute converge checks for a posterior sample
+#'
+#' Computes the Rhat, ESS and ESS bulk for a posterior sample
+#' @param array array with dimension (iters, chains, ...)
+#'
+#' @return data.frame with the metrics and id for first dimension, k for the sencond
+#'
+#' @examples
+#' #
+.compute_converge_metrics = function(array) {
+  array_dim = dim(array)
+
+  # for one dim parameters
+  if(length(array_dim) == 2){
+
+    conv_check_metrics = data.frame(
+      rhat = posterior::rhat(array),
+      ess = posterior::ess_basic(array)
+    )
+    # for two dimensional parameters
+  }else if(length(array_dim) == 3){
+
+    conv_check_metrics = lapply(1:array_dim[3], function(j){
+      data.frame(
+        id = j,
+        rhat = posterior::rhat(array[, , j]),
+        ess = posterior::ess_basic(array[, , j]),
+        ess_bulk = posterior::ess_bulk(array[, , j])
+      )
+    }) %>%
+      do.call(rbind, .)
+    # for three dimensional parameters
+  }else if(length(array_dim) == 4) {
+    # check if the last dimension is one, it changes the shape of the array when subseted
+    if(array_dim[4] == 1) {
+      conv_check_metrics = lapply(1:array_dim[3], function(j){
+        data.frame(
+          id = j,
+          K = 1,
+          rhat = posterior::rhat(array[, , j, 1]),
+          ess = posterior::ess_basic(array[, , j, 1]),
+          ess_bulk = posterior::ess_bulk(array[, , j, 1])
+        )
+      }) %>%
+        do.call(rbind, .)
+
+      # regular case
+    }else{
+      conv_check_metrics = lapply(1:array_dim[3], function(j){
+        lapply(1:array_dim[4], function(k){
+          data.frame(
+            id = j,
+            K = k,
+            rhat = posterior::rhat(array[, , j, k]),
+            ess = posterior::ess_basic(array[, , j, k]),
+            ess_bulk = posterior::ess_bulk(array[, , j, k])
+          )
+        }) %>% do.call(rbind, .)
+      }) %>%
+        do.call(rbind, .)
+    }
+  }
+
+  return(conv_check_metrics)
 }
