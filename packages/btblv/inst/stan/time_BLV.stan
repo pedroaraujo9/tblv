@@ -16,7 +16,8 @@ parameters {
   matrix[n, K] E; // latent effects
   matrix[J, K] alpha;
   vector[J] beta;
-  vector[J] log_kappa;
+  vector[J-1] delta_raw;
+  real baseline_delta;
   vector<lower=-1, upper=1>[Ng] phi;
   vector[Ng] log_sigma;
 }
@@ -26,6 +27,10 @@ transformed parameters {
   matrix[n, J] beta_expand;
   beta_expand = rep_matrix(beta, n)';
   vector[Ng] sigma = exp(log_sigma);
+
+  vector[J] delta = append_row(delta_raw, -sum(delta_raw));
+  vector[J] log_kappa = baseline_delta + delta;
+
   vector<lower=0>[J] kappa = exp(log_kappa);
 
   // prior for the init point
@@ -42,7 +47,8 @@ transformed parameters {
 
 model {
   beta ~ normal(0, 10);
-  log_kappa ~ normal(0, 10);
+  delta_raw ~ normal(0, 10);
+  baseline_delta ~ normal(0, 10);
 
   for(i in 1:Ng) {
     log_sigma[i] ~ normal(0, 1);

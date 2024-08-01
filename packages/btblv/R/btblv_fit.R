@@ -39,34 +39,34 @@ btblv_fit = function(btblv_data,
     seed = seed
   )
 
-  pars = c("E", "theta", "alpha", "beta", "log_kappa",
-           "phi", "sigma")
-
   if(precision == "single") {
+
     fit = rstan::sampling(
-      stanmodels$time_BLV_single_precision,
+      object = stanmodels$time_BLV_single_precision,
       data = btblv_data$data_list_stan,
+      pars = c("beta_expand", "log_sigma", "kappa"),
+      include = F,
       iter = iter,
       warmup = warmup,
       thin = thin,
       chains = chains,
       cores = cores,
       init = inits,
-      pars = pars,
       ...
     )
 
   }else if(precision == "specific"){
     fit = rstan::sampling(
-      stanmodels$time_BLV,
+      object = stanmodels$time_BLV,
       data = btblv_data$data_list_stan,
+      pars = c("beta_expand", "delta_raw", "log_sigma"),
+      include = FALSE,
       iter = iter,
       warmup = warmup,
       thin = thin,
       chains = chains,
       cores = cores,
       init = inits,
-      pars = pars,
       ...
     )
   }

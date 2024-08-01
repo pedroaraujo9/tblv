@@ -2,18 +2,23 @@
 #'
 #' Create object with the data to be used in `btblv_fit`
 #'
-#' @param df `data.frame` with resp_column, item_column, group_column, time_column
-#' @param resp_col_name string with the name of the column with the (0, 1) data
-#' @param item_col_name string with the name of the column with the items
-#' @param group_col_name string with the name of the columns with the groups
-#' @param time_col_name string with the name of the columns with the time
+#' @param df `data.frame` with at least `resp_column`, `item_column`, `group_column`, `time_column`.
+#' @param resp_col_name string with the name of the column with the (0, 1) data.
+#' @param item_col_name string with the name of the column with the items.
+#' @param group_col_name string with the name of the columns with the groups.
+#' @param time_col_name string with the name of the columns with the time.
 #'
-#' @return btblv_data object
+#' @return btblv_data object.
 #' @export
 #'
 #' @examples
-#' data("lf")
-#' data = create_btblv_data(lf, "mx", "age", "country", "year")
+#' data("hmad_data")
+#' data = create_btblv_data(df = hmd_data$life_tables_5x5,
+#'                          resp_col_name = "mx",
+#'                          item_col_name = "age",
+#'                          group_col_name = "country",
+#'                          time_col_name = "year")
+#'
 create_btblv_data = function(df,
                              resp_col_name,
                              item_col_name,

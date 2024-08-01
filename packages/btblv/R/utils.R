@@ -78,7 +78,8 @@
         beta = beta_mle + rnorm(n=J, sd = 0.1),
         log_sigma = rnorm(Ng, 0, 0.1),
         phi = runif(Ng, -0.1, 0.1),
-        log_kappa = precision_mle + rnorm(n = 1, sd = 0.1)
+        baseline_delta = mean(precision_mle) + rnorm(n = 1, sd = 0.1),
+        delta_raw = precision_mle[-J] - mean(precision_mle) + rnorm(n = 1, sd = 0.1)
       )
     })
   }
