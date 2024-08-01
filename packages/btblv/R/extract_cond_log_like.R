@@ -1,8 +1,8 @@
 #' Extract the pointwise condotional log-likelihood for the btblv model
 #'
-#' @param btblv_posterior btblv_posterior object
+#' @param btblv_posterior btblv_posterior object.
 #'
-#' @return matrix with the pointwise log-likelihood for each iteration of the posterior
+#' @return matrix with the pointwise log-likelihood for each iteration of the posterior.
 #' @export
 #'
 #' @examples

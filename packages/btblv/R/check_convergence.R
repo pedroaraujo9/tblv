@@ -11,7 +11,7 @@ check_convergence = function(btblv_posterior) {
 
   beta = btblv_posterior$post_sample_chains$beta %>%
     .compute_converge_metrics() %>%
-    rename(item_num = id)
+    dplyr::rename(item_num = id)
 
   if(btblv_posterior$precision == "single") {
     log_kappa = btblv_posterior$post_sample_chains$log_kappa %>%
@@ -24,36 +24,36 @@ check_convergence = function(btblv_posterior) {
   }else if(btblv_posterior$precision == "specific") {
     log_kappa = btblv_posterior$post_sample_chains$log_kappa %>%
       .compute_converge_metrics() %>%
-      rename(item_num = id)
+      dplyr::rename(item_num = id)
 
     kappa = btblv_posterior$post_sample_chains$log_kappa %>%
       exp() %>%
       .compute_converge_metrics() %>%
-      rename(item_num = id)
+      dplyr::rename(item_num = id)
   }
 
   phi = btblv_posterior$post_sample_chains$phi %>%
     .compute_converge_metrics() %>%
-    rename(group_num = id)
+    dplyr::rename(group_num = id)
 
   sigma = btblv_posterior$post_sample_chains$sigma %>%
     .compute_converge_metrics() %>%
-    rename(sigma_num = id)
+    dplyr::rename(sigma_num = id)
 
   lp__ = btblv_posterior$post_sample_chains$lp__ %>%
     .compute_converge_metrics()
 
   alpha = btblv_posterior$post_sample_chains$rot_alpha %>%
     .compute_converge_metrics() %>%
-    rename(item_num = id)
+    dplyr::rename(item_num = id)
 
   theta = btblv_posterior$post_sample_chains$rot_theta %>%
     .compute_converge_metrics() %>%
-    rename(ind_num = id)
+    dplyr::rename(ind_num = id)
 
   E = btblv_posterior$post_sample_chains$rot_E %>%
     .compute_converge_metrics() %>%
-    rename(ind_num = id)
+    dplyr::rename(ind_num = id)
 
   posterior_check_list = list(
     beta = beta,
