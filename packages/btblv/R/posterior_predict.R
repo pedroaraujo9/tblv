@@ -13,8 +13,10 @@
 #' @export
 #'
 #' @examples
-#' #
-posterior_predict = function(btblv_posterior, seed = NULL, cred_mass = 0.95) {
+#' # example_fit$single_K1 %>% extract_posterior() %>% posterior_predict()
+posterior_predict = function(btblv_posterior,
+                             seed = NULL,
+                             cred_mass = 0.95) {
   if(!is.null(seed)) {
     set.seed(seed)
   }
@@ -55,6 +57,7 @@ posterior_predict = function(btblv_posterior, seed = NULL, cred_mass = 0.95) {
     group = btblv_posterior$btblv_data$data$group,
     time = btblv_posterior$btblv_data$data$time,
     item = btblv_posterior$btblv_data$data$item,
+    y = btblv_posterior$btblv_data$data$y,
     mean = pred_post_sample %>% colMeans(),
     sd = pred_post_sample %>% apply(MARGIN = 2, FUN = sd),
     li = pred_post_sample %>% apply(MARGIN = 2, function(x) HDInterval::hdi(x, credMass = cred_mass)[1]),
