@@ -13,11 +13,15 @@
 #'
 #' @examples
 #' data("hmad_data")
-#' data = create_btblv_data(df = hmd_data$life_tables_5x5,
+#' lf = hmd_data$life_tables_5x5 %>%
+#'  dplyr::filter(year %in% seq(1950, 2020, 5))
+
+#' data = create_btblv_data(df = lf,
 #'                          resp_col_name = "mx",
 #'                          item_col_name = "age",
 #'                          group_col_name = "country",
 #'                          time_col_name = "year")
+#'
 #'
 create_btblv_data = function(df,
                              resp_col_name,
@@ -26,79 +30,79 @@ create_btblv_data = function(df,
                              time_col_name) {
 
   assertthat::assert_that(
-    "data.frame" %in% class(df),
+    "data.frame" %in% base::class(df),
     msg = "`df` should be a data.frame"
   )
 
   assertthat::assert_that(
     {
-      spaces = as.data.frame(df)[, time_col_name] %>%
-        unique() %>%
-        sort() %>%
-        diff() %>%
-        unique()
+      spaces = base::as.data.frame(df)[, time_col_name] %>%
+        base::unique() %>%
+        base::sort() %>%
+        base::diff() %>%
+        base::unique()
 
-      length(spaces) == 1
+      base::length(spaces) == 1
     },
     msg = "time points should be equally spaced for each group of observations."
 
   )
 
   assertthat::assert_that(
-    (class(resp_col_name) == "character") & (length(resp_col_name) == 1),
+    (base::class(resp_col_name) == "character") & (base::length(resp_col_name) == 1),
     msg = "`resp_col_name` should be a single character"
   )
 
   assertthat::assert_that(
-    (class(item_col_name) == "character") & (length(item_col_name) == 1),
+    (base::class(item_col_name) == "character") & (base::length(item_col_name) == 1),
     msg = "`item_col_name` should be a single character"
   )
 
   assertthat::assert_that(
-    (class(group_col_name) == "character") & (length(group_col_name) == 1),
+    (base::class(group_col_name) == "character") & (base::length(group_col_name) == 1),
     msg = "`group_col_name` should be a single character"
   )
 
   assertthat::assert_that(
-    (class(time_col_name) == "character") & (length(time_col_name) == 1),
+    (base::class(time_col_name) == "character") & (base::length(time_col_name) == 1),
     msg = "`time_col_name` should be a single character"
   )
 
-  columns = c(
+  columns = base::c(
     item_col_name, group_col_name, time_col_name, resp_col_name
   )
 
-  df = as.data.frame(df)
+  df =  base::as.data.frame(df)
   df = df[, columns]
-  names(df) = c("item", "group", "time", "y")
-  data_df = df %>% as_tibble() %>% arrange(group, time, item)
+  base::names(df) = c("item", "group", "time", "y")
+  data_df = df %>% tibble::as_tibble() %>% dplyr::arrange(group, time, item)
 
   # creates unique key for cohort group-time
-  data_df$ind = paste0(data_df$group, "-", data_df$time)
+  data_df$ind = base::paste0(data_df$group, "-", data_df$time)
 
   # unique values for the variables
-  item = data_df$item %>% unique() %>% sort()
-  ind = data_df$ind %>% unique() %>% sort()
-  time = data_df$time %>% sort() %>% unique()
-  group = data_df$group %>% unique() %>% sort()
+  item = data_df$item %>% base::unique() %>% base::sort()
+  ind = data_df$ind %>% base::unique() %>% base::sort()
+  time = data_df$time %>% base::unique() %>% base::sort()
+  group = data_df$group %>% base::unique() %>% base::sort()
 
   # numeric label label for each variable
-  item_label = as.character(1:length(item))
-  ind_label = as.character(1:length(ind))
-  time_label = as.character(1:length(time))
-  group_label = as.character(1:length(group))
+  item_label = base::as.character(1:base::length(item))
+  ind_label = base::as.character(1:base::length(ind))
+  time_label = base::as.character(1:base::length(time))
+  group_label = base::as.character(1:base::length(group))
 
-  names(item_label) = item
-  names(ind_label) = ind
-  names(time_label) = time
-  names(group_label) = group
+  base::names(item_label) = item
+  base::names(ind_label) = ind
+  base::names(time_label) = time
+  base::names(group_label) = group
 
   # add columns with the numerical labels
   data_df = data_df %>%
-    dplyr::mutate(item_num = recode_factor(item, !!!item_label) %>% as.integer(),
-                  ind_num = recode_factor(ind, !!!ind_label) %>% as.integer(),
-                  time_num = recode_factor(time, !!!time_label) %>% as.integer(),
-                  group_num = recode_factor(group, !!!group_label) %>% as.integer())
+    dplyr::mutate(item_num = dplyr::recode_factor(item, !!!item_label) %>% base::as.integer(),
+                  ind_num = dplyr::recode_factor(ind, !!!ind_label) %>% base::as.integer(),
+                  time_num = dplyr::recode_factor(time, !!!time_label) %>% base::as.integer(),
+                  group_num = dplyr::recode_factor(group, !!!group_label) %>% base::as.integer())
 
   # group and time
   ind_time_id = data_df %>%
@@ -109,35 +113,35 @@ create_btblv_data = function(df,
   ind_time_id = ind_time_id %>%
     dplyr::left_join(
       ind_time_id %>%
-        mutate(time_num = time_num + 1) %>%
-        select(ind_num, time_num, group) %>%
-        rename(lag_ind = ind_num),
+        dplyr::mutate(time_num = time_num + 1) %>%
+        dplyr::select(ind_num, time_num, group) %>%
+        dplyr::rename(lag_ind = ind_num),
       by = c("group", "time_num")
     ) %>%
     dplyr::select(ind, ind_num, lag_ind, group, time, time_num, group_num)
 
-  init_index = ind_time_id %>% filter(is.na(lag_ind))
-  past_index = ind_time_id %>% filter(!is.na(lag_ind))
+  init_index = ind_time_id %>% dplyr::filter(base::is.na(lag_ind))
+  past_index = ind_time_id %>% dplyr::filter(!base::is.na(lag_ind))
 
   data_wide = data_df %>%
     dplyr::select(ind, item, y) %>%
     tidyr::spread(item, y)
 
-  data_matrix = data_wide %>% dplyr::select(-ind) %>% as.matrix()
+  data_matrix = data_wide %>% dplyr::select(-ind) %>% base::as.matrix()
 
-  data_list_stan = list(
+  data_list_stan = base::list(
     x = data_matrix,
-    N = nrow(data_df),
-    J = data_df$item %>% unique() %>% length(),
-    n = data_df$ind %>% unique() %>% length(),
-    Ng = data_df$group %>% unique() %>% length(),
+    N = base::nrow(data_df),
+    J = data_df$item %>% base::unique() %>% base::length(),
+    n = data_df$ind %>% base::unique() %>% base::length(),
+    Ng = data_df$group %>% base::unique() %>% base::length(),
     init_index = init_index$ind_num,
     past_index = past_index$lag_ind,
     current_index = past_index$ind_num,
     group_id = past_index$group_num
   )
 
-  btblv_data = list(
+  btblv_data = base::list(
     data = data_df,
     data_wide = data_wide,
     data_list_stan = data_list_stan,
@@ -145,8 +149,8 @@ create_btblv_data = function(df,
     columns = columns
   )
 
-  class(btblv_data) = "btblv_data"
-  return(btblv_data)
+  base::class(btblv_data) = "btblv_data"
+  base::return(btblv_data)
 
 }
 
