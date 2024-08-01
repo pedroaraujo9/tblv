@@ -16,5 +16,5 @@ invese of the logit
 Inverse of the logit function
 }
 \examples{
-# .inv_logit(10)
+inv_logit(10)
 }
