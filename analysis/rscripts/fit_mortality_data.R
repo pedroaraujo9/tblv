@@ -40,7 +40,7 @@ print(models_saved)
 
 if(!(model_name %in% models_saved)) {
   #### data ####
-  lf = readRDS("analysis/model/model_data.rds")
+  lf = readRDS("analysis/data/data_model.rds")
   
   data = btblv::create_btblv_data(df = lf,
                                   resp_col_name = "mx",
