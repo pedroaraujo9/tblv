@@ -13,11 +13,15 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4time_BLV_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4time_BLV_fixed_beta_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4time_BLV_single_precision_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4time_BLV_single_precision_fixed_beta_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4time_BLV_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4time_BLV_mod, 0},
+    {"_rcpp_module_boot_stan_fit4time_BLV_fixed_beta_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4time_BLV_fixed_beta_mod, 0},
     {"_rcpp_module_boot_stan_fit4time_BLV_single_precision_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4time_BLV_single_precision_mod, 0},
+    {"_rcpp_module_boot_stan_fit4time_BLV_single_precision_fixed_beta_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4time_BLV_single_precision_fixed_beta_mod, 0},
     {NULL, NULL, 0}
 };
 
