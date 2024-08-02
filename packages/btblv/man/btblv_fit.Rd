@@ -8,7 +8,6 @@ btblv_fit(
   btblv_data,
   K,
   precision = "single",
-  intercept = "hmc",
   iter,
   warmup,
   thin,
@@ -26,9 +25,6 @@ btblv_fit(
 \item{precision}{string with the type of precision. It is "single" if all
 items have the same precision or "specific" if each item has its own precision
 parameter. Default is "single".}
-
-\item{intercept}{if "hmc" the intercept beta is estimated with HMC jointly.
-If "mle" beta is fixed as the mle of the model where all latent effects are 0.}
 
 \item{iter}{integer with the number of iterations}
 

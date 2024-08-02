@@ -18,8 +18,7 @@ approx_mloglike = function(btblv_posterior, N, seed, cores = 1) {
   data_wide = btblv_data$data |>
     dplyr::select(ind_num, group_num, item, y) |>
     dplyr::arrange(ind_num) |>
-    tidyr::spread(item, y) |>
-    arrange(ind_num)
+    tidyr::spread(item, y)
   
   data_matrix = btblv_data$data_list_stan$x
   K = btblv_data$data_list_stan$K
@@ -42,8 +41,7 @@ approx_mloglike = function(btblv_posterior, N, seed, cores = 1) {
       inds = data_wide |>
         dplyr::filter(group_num == g) |> 
         dplyr::select(ind_num) |> 
-        base::unlist() |> 
-        base::sort()
+        base::unlist() 
       
       data_group = data_matrix[inds, ]
       
@@ -55,7 +53,7 @@ approx_mloglike = function(btblv_posterior, N, seed, cores = 1) {
       })
       
       log_mlike_sample = tblvArmaUtils::rcpp_mc_log_mlike(
-        N = N, 
+        N=N, 
         x = data_group, 
         alpha = alpha, 
         beta = beta, 
@@ -81,8 +79,7 @@ approx_mloglike = function(btblv_posterior, N, seed, cores = 1) {
       inds = data_wide |>
         dplyr::filter(group_num == g) |> 
         dplyr::select(ind_num) |> 
-        base::unlist() |> 
-        base::sort()
+        base::unlist() 
       
       data_group = data_matrix[inds, ]
       
@@ -94,7 +91,7 @@ approx_mloglike = function(btblv_posterior, N, seed, cores = 1) {
       })
       
       log_mlike_sample = tblvArmaUtils::rcpp_mc_log_mlike(
-        N = N, 
+        N=N, 
         x = data_group, 
         alpha = alpha, 
         beta = beta, 
