@@ -6,3 +6,4 @@
 test-build.R
 credentials.json
 analysis/models/*
+results/*
