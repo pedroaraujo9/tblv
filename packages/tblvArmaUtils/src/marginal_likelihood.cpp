@@ -16,7 +16,6 @@ void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
   }
 } 
 
-// [[Rcpp::export]]
 arma::vec dmvnrm_arma_fast(arma::mat const &x,  
                            arma::rowvec const &mean,  
                            arma::mat const &sigma, 
@@ -41,11 +40,6 @@ arma::vec dmvnrm_arma_fast(arma::mat const &x,
     return out;
   return exp(out);
 } 
-
-// [[Rcpp::export]]
-double LSE(arma::vec x) {
-  return max(x) + log(sum(exp(x - max(x))));
-}   
 
 arma::mat expand_vec(arma::vec x, int n) {
   arma::vec one_n(n, arma::fill::ones);
@@ -126,3 +120,8 @@ arma::vec rcpp_mc_log_mlike(int N,
   return log_like + log_prior + log_prop;
 }   
 
+
+// [[Rcpp::export]]
+double LSE(arma::vec x) {
+  return max(x) + log(sum(exp(x - max(x))));
+}  
