@@ -3,7 +3,7 @@ test_that("input", {
     expect_no_error(
       .x %>%
         btblv::extract_posterior() %>%
-        compute_BIC(N = 500, cores = 1)
+        compute_BIC(N = 500, cores = 1, seed = 1)
     )
   })
   
@@ -11,7 +11,7 @@ test_that("input", {
     expect_no_error(
       .x %>%
         btblv::extract_posterior() %>%
-        compute_BIC(N = 500, cores = 2)
+        compute_BIC(N = 500, cores = 2, seed = 1)
     )
   })
 })

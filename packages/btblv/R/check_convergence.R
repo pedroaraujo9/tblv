@@ -30,6 +30,9 @@ check_convergence = function(btblv_posterior) {
       exp() %>%
       .compute_converge_metrics() %>%
       dplyr::rename(item_num = id)
+    
+    baseline_delta = btblv_posterior$post_sample_chains$baseline_delta %>%
+      .compute_converge_metrics()
   }
 
   phi = btblv_posterior$post_sample_chains$phi %>%
@@ -65,6 +68,10 @@ check_convergence = function(btblv_posterior) {
     theta = theta,
     E = E
   )
+  
+  if(btblv_posterior$precision == "specific") {
+    posterior_check_list$baseline_delta = baseline_delta
+  }
 
   return(posterior_check_list)
 

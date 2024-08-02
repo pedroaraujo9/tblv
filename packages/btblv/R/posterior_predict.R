@@ -21,7 +21,6 @@ posterior_predict = function(btblv_posterior,
     set.seed(seed)
   }
 
-  btblv_posterior = example_fit$single_K1 %>% extract_posterior()
   iters = btblv_posterior$post_sample_array$E %>% dim() %>% .[1]
   N = btblv_posterior$btblv_data$data_list_stan$N
 

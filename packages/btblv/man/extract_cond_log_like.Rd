@@ -7,10 +7,10 @@
 extract_cond_log_like(btblv_posterior)
 }
 \arguments{
-\item{btblv_posterior}{btblv_posterior object}
+\item{btblv_posterior}{btblv_posterior object.}
 }
 \value{
-matrix with the pointwise log-likelihood for each iteration of the posterior
+matrix with the pointwise log-likelihood for each iteration of the posterior.
 }
 \description{
 Extract the pointwise condotional log-likelihood for the btblv model
