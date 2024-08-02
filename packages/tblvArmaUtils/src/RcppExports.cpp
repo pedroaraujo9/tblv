@@ -11,31 +11,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// dmvnrm_arma_fast
-arma::vec dmvnrm_arma_fast(arma::mat const& x, arma::rowvec const& mean, arma::mat const& sigma, bool const logd);
-RcppExport SEXP _tblvArmaUtils_dmvnrm_arma_fast(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP logdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat const& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::rowvec const& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< arma::mat const& >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< bool const >::type logd(logdSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnrm_arma_fast(x, mean, sigma, logd));
-    return rcpp_result_gen;
-END_RCPP
-}
-// LSE
-double LSE(arma::vec x);
-RcppExport SEXP _tblvArmaUtils_LSE(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(LSE(x));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_mc_log_mlike
 arma::vec rcpp_mc_log_mlike(int N, arma::mat x, arma::mat alpha, arma::mat beta, arma::mat kappa, double phi, double sigma, Rcpp::List E_post_sample_list);
 RcppExport SEXP _tblvArmaUtils_rcpp_mc_log_mlike(SEXP NSEXP, SEXP xSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP kappaSEXP, SEXP phiSEXP, SEXP sigmaSEXP, SEXP E_post_sample_listSEXP) {
@@ -54,58 +29,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpparma_hello_world
-arma::mat rcpparma_hello_world();
-RcppExport SEXP _tblvArmaUtils_rcpparma_hello_world() {
+// LSE
+double LSE(arma::vec x);
+RcppExport SEXP _tblvArmaUtils_LSE(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpparma_hello_world());
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_outerproduct
-arma::mat rcpparma_outerproduct(const arma::colvec& x);
-RcppExport SEXP _tblvArmaUtils_rcpparma_outerproduct(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_outerproduct(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_innerproduct
-double rcpparma_innerproduct(const arma::colvec& x);
-RcppExport SEXP _tblvArmaUtils_rcpparma_innerproduct(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_innerproduct(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_bothproducts
-Rcpp::List rcpparma_bothproducts(const arma::colvec& x);
-RcppExport SEXP _tblvArmaUtils_rcpparma_bothproducts(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_bothproducts(x));
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(LSE(x));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_tblvArmaUtils_dmvnrm_arma_fast", (DL_FUNC) &_tblvArmaUtils_dmvnrm_arma_fast, 4},
-    {"_tblvArmaUtils_LSE", (DL_FUNC) &_tblvArmaUtils_LSE, 1},
     {"_tblvArmaUtils_rcpp_mc_log_mlike", (DL_FUNC) &_tblvArmaUtils_rcpp_mc_log_mlike, 8},
-    {"_tblvArmaUtils_rcpparma_hello_world", (DL_FUNC) &_tblvArmaUtils_rcpparma_hello_world, 0},
-    {"_tblvArmaUtils_rcpparma_outerproduct", (DL_FUNC) &_tblvArmaUtils_rcpparma_outerproduct, 1},
-    {"_tblvArmaUtils_rcpparma_innerproduct", (DL_FUNC) &_tblvArmaUtils_rcpparma_innerproduct, 1},
-    {"_tblvArmaUtils_rcpparma_bothproducts", (DL_FUNC) &_tblvArmaUtils_rcpparma_bothproducts, 1},
+    {"_tblvArmaUtils_LSE", (DL_FUNC) &_tblvArmaUtils_LSE, 1},
     {NULL, NULL, 0}
 };
 

@@ -6,6 +6,9 @@
 #'
 #' @return numeric value with sum(log(exp(x)))
 #' @export
+#' 
 #' @examples
 #' LSE(c(10, 20, 30))
-"LSE"
+LSE <- function(x) {
+  .Call(`_tblvArmaUtils_LSE`, x)
+}
