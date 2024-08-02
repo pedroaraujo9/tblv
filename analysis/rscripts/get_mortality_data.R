@@ -5,7 +5,7 @@ library(yaml)
 
 # credentials with password and username to access HMD data
 # https://www.mortality.org/
-cred = yaml.load_file("analysis/rscripts/config.yaml")
+cred = yaml.load_file("config.yaml")
 
 # countries names 
 
