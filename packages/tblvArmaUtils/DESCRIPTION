@@ -1,0 +1,17 @@
+Package: tblvArmaUtils
+Type: Package
+Title: What the Package Does (Short Line)
+Version: 1.0
+Date: 2024-08-02
+Author: Who wrote it
+Maintainer: Who to complain to <yourfault@somewhere.net>
+Description: More about what it does (maybe more than one
+      line).
+License: What license is it under?
+Encoding: UTF-8
+Imports: Rcpp (>= 1.0.13)
+LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 7.3.2
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
