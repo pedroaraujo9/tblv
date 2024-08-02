@@ -1,43 +1,79 @@
 library(btblv)
+library(tidyverse)
 
-#### tblv single precision ####
+convergence_summary = function(models_path, precision_type) {
+  
+  precision_match = paste0("precision=", precision_type)
+  models_path = models_path[stringr::str_detect(models_path,  precision_match)]
+  
+  Ks = models_path %>%
+    stringr::str_extract("K=\\d{1,10}") %>% 
+    stringr::str_extract("\\d{1,10}") %>%
+    as.integer() %>%
+    na.omit() %>%
+    sort()
+  
+  conv_summary = lapply(Ks, function(k){
+    model_path = models_path[stringr::str_detect(models_path, paste0("K=", k, ".rds"))]
+    print(model_path)
+    
+    model_fit = readRDS(model_path)
+    
+    # convergence statistics 
+    conv_stats = model_fit %>% 
+      btblv::extract_posterior() %>%
+      btblv::check_convergence()
+    
+    # bad ones for each class of parameters
+    prop_bad = lapply(names(conv_stats), function(param){
+      data.frame(
+        rhat = mean(conv_stats[[param]]$rhat > 1.1),
+        ess = mean(conv_stats[[param]]$ess < 10),
+        param = param,
+        K = k
+      )
+    }) %>%
+      do.call(rbind, .) %>%
+      tibble::as_tibble()
+    
+    return(prop_bad)
+    
+  }) %>%
+    do.call(rbind, .)
+  
+  rhat_summary = conv_summary %>%
+    dplyr::select(param, rhat, K) %>%
+    tidyr::spread(param, rhat)
+
+  ess_summary = conv_summary %>%
+    dplyr::select(param, ess, K) %>%
+    tidyr::spread(param, ess)
+  
+  out = list(
+    rhat_summary = rhat_summary,
+    ess_summary = ess_summary
+  )
+  
+  return(out)
+}
+
+
+#### check convergence stats ####
 path = "analysis/models"
 models = list.files(path)
-models = models[stringr::str_detect(models, "precision=single")]
-models = paste0(path, "/", models)
+models_path = paste0(path, "/", models)
+models_path = models_path[stringr::str_detect( models_path, "btblv-")]
+models_path
 
-conv_summary = lapply(1:10, function(k){
-  print(k)
-  model_path = models[stringr::str_detect(models, paste0("K=", k, ".rds"))]
-  model_fit = readRDS(model_path)
-  
-  # convergence statistics 
-  conv_stats = model_fit %>% 
-    btblv::extract_posterior() %>%
-    btblv::check_convergence()
-  
-  # bad ones for each class of parameters
-  prop_bad = lapply(names(conv_stats), function(param){
-    data.frame(
-      rhat = mean(conv_stats[[param]]$rhat > 1.1),
-      ess = mean(conv_stats[[param]]$ess < 10),
-      param = param,
-      K = k
-    )
-  }) %>%
-    do.call(rbind, .) %>%
-    tibble::as_tibble()
-  
-  return(prop_bad)
-  
-}) %>%
-  do.call(rbind, .)
+# single precision
+conv_summary = convergence_summary(models_path, precision_type = "single")
 
-conv_summary %>%
-  select(param, rhat, K) %>%
-  spread(param, rhat)
+conv_summary$rhat_summary
+conv_summary$ess_summary
 
-conv_summary %>%
-  select(param, ess, K) %>%
-  spread(param, ess)
+# specific precision
+conv_summary = convergence_summary(models_path, precision_type = "specific")
+
+conv_summary$rhat_summary
+conv_summary$ess_summary
 
