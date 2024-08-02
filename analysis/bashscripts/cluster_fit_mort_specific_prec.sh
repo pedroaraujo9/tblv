@@ -23,7 +23,7 @@ iter=10000;warmup=5000;thin=10; chains=3;
 
 path="analysis/models"
 gdrive=TRUE
-gdrive_folder_id="1qlT8pJsHhzQF8-XCa7bS-f5fmEwcEIcB"
+gdrive_folder_id=$(grep '^gdrive_folder_id:' config.yaml | awk '{print $2}' | tr -d '"')
 model="specific"
 
 module load R

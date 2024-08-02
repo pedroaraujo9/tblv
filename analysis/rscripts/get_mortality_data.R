@@ -5,7 +5,7 @@ library(yaml)
 
 # credentials with password and username to access HMD data
 # https://www.mortality.org/
-cred = yaml.load_file("config.yaml")
+config = yaml.load_file("config.yaml")
 
 # countries names 
 
@@ -15,8 +15,8 @@ download_mortality = function(credentials, age_group_size, cohort_size) {
   life_tables = map_df(countries$CNTRY, ~{
     readHMDweb(.x, 
                item = paste0("bltper_", age_group_size, "x", cohort_size), 
-               username = credentials$username, 
-               password = credentials$password) %>%
+               username = config$hmd_cred$username, 
+               password = config$hmd_cred$password) %>%
       mutate(country_code = .x)
   }) %>%
     select(Year, Age, mx, qx, OpenInterval, country_code) %>%
