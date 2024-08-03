@@ -14,12 +14,9 @@
 #'
 #' @examples
 #' # example_fit$single_K1 %>% extract_posterior() %>% posterior_predict()
-posterior_predict = function(btblv_posterior,
-                             seed = NULL,
-                             cred_mass = 0.95) {
-  if(!is.null(seed)) {
-    set.seed(seed)
-  }
+posterior_predict = function(btblv_posterior, seed, cred_mass = 0.95) {
+
+  set.seed(seed)
 
   iters = btblv_posterior$post_sample_array$E %>% dim() %>% .[1]
   N = btblv_posterior$btblv_data$data_list_stan$N
@@ -66,8 +63,8 @@ posterior_predict = function(btblv_posterior,
 
   out = list(
     pred_post_summary_df = pred_post_summary_df,
-    pred_post_sample = pred_post_sample
-
+    pred_post_sample = pred_post_sample,
+    seed = seed
   )
 
   return(out)

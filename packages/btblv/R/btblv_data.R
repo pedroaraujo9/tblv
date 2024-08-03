@@ -72,6 +72,11 @@ create_btblv_data = function(df,
     item_col_name, group_col_name, time_col_name, resp_col_name
   )
 
+  # start object
+  btblv_data = base::list()
+  base::class(btblv_data) = "btblv_data"
+  btblv_data$df = df
+
   df =  base::as.data.frame(df)
   df = df[, columns]
   base::names(df) = c("item", "group", "time", "y")
@@ -124,10 +129,13 @@ create_btblv_data = function(df,
   past_index = ind_time_id %>% dplyr::filter(!base::is.na(lag_ind))
 
   data_wide = data_df %>%
-    dplyr::select(ind, item, y) %>%
-    tidyr::spread(item, y)
+    dplyr::select(ind_num, group_num, time_num, item_num, y) %>%
+    tidyr::spread(item_num, y) %>%
+    dplyr::arrange(ind_num)
 
-  data_matrix = data_wide %>% dplyr::select(-ind) %>% base::as.matrix()
+  data_matrix = data_wide %>%
+    dplyr::select(-(ind_num:time_num)) %>%
+    base::as.matrix()
 
   data_list_stan = base::list(
     x = data_matrix,
@@ -141,15 +149,11 @@ create_btblv_data = function(df,
     group_id = past_index$group_num
   )
 
-  btblv_data = base::list(
-    data = data_df,
-    data_wide = data_wide,
-    data_list_stan = data_list_stan,
-    original_data = df,
-    columns = columns
-  )
+  btblv_data$data = data_df
+  btblv_data$data_wide = data_wide
+  btblv_data$data_list_stan = data_list_stan
+  btblv_data$columns = columns
 
-  base::class(btblv_data) = "btblv_data"
   base::return(btblv_data)
 
 }

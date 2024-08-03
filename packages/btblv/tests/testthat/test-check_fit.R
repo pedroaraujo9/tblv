@@ -6,7 +6,7 @@ test_that("input", {
       {
         post_pred = .x %>%
           extract_posterior() %>%
-          posterior_predict()
+          posterior_predict(seed = 1)
 
         post_summ = .x %>%
           extract_posterior() %>%

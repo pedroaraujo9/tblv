@@ -388,3 +388,66 @@ inv_logit = function(x) {
 
   return(conv_check_metrics)
 }
+
+#' Generate AR1 serie from the incremenets and parameters
+#'
+#' @param E numeric matrix with random increments.
+#' @param sigma numeric value with sigma parameter.
+#' @param phi numeric value with phi parameter.
+#'
+#' @return numeric matrix with AR1 serie
+#'
+#' @examples
+#' #
+.increment_to_series = function(E, sigma, phi) {
+
+  theta = matrix(nrow = nrow(E), ncol = ncol(E))
+  theta[1, ] = (sigma/sqrt(1-(phi^2)))*E[1, ]
+
+  for(i in 2:nrow(theta)) {
+    theta[i, ] = phi*theta[i-1, ] + sigma*E[i, ]
+  }
+
+  return(theta)
+}
+
+#' Generate AR1 series from incremenets of a group stacked increments
+#'
+#' @param E matrix with the increments for each group stacked.
+#' @param group_index numeric vector with the same size of the number of lines
+#' of E. It indicates the group of the elements of E.
+#' @param sigma numeric vector the sigma parameter for each group.
+#' @param phi numeric vector the phi parameter for each group.
+#'
+#' @return numeric matrix with serie E.
+#'
+#' @examples
+#' #
+.apply_increment_to_series = function(E, group_index, sigma, phi) {
+  Ng = length(unique(group_index))
+
+  theta_matrix = lapply(1:Ng, function(g){
+    sigma_group = sigma[g]
+    phi_group = phi[g]
+    E_group = E[group_index == g, ]
+
+    .increment_to_series(E_group, sigma_group, phi_group)
+
+  }) %>% do.call(rbind, .)
+
+  return(theta_matrix)
+}
+
+#' Root mean squared error
+#'
+#' @param x numeric vector
+#' @param y numeric vector
+#'
+#' @return numeric vector
+#'
+#' @examples
+#' RMSE(c(1, 2, 3), c(1, 2, 5))
+.RMSE = function(x, y) {
+  sqrt(mean((x-y)^2))
+}
+

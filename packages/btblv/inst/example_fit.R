@@ -10,7 +10,6 @@ lf = hmd_data$life_tables_5x5 %>%
                           "England and Wales (Civilian Population)",
                           "Scotland", "Northern Ireland", "Wales")))
 
-
 iter = 50
 warmup = iter/2
 thin = 1

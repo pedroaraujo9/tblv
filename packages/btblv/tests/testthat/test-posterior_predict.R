@@ -2,19 +2,19 @@ test_that("input", {
   data("example_fit")
 
   expect_no_error(
-    example_fit$single_K1 %>% extract_posterior() %>% posterior_predict()
+    example_fit$single_K1 %>% extract_posterior() %>% posterior_predict(seed = 1)
   )
 
   expect_no_error(
-    example_fit$single_K2 %>% extract_posterior() %>% posterior_predict()
+    example_fit$single_K2 %>% extract_posterior() %>% posterior_predict(seed = 1)
   )
 
   expect_no_error(
-    example_fit$specific_K1 %>% extract_posterior() %>% posterior_predict()
+    example_fit$specific_K1 %>% extract_posterior() %>% posterior_predict(seed = 1)
   )
 
   expect_no_error(
-    example_fit$specific_K2 %>% extract_posterior() %>% posterior_predict()
+    example_fit$specific_K2 %>% extract_posterior() %>% posterior_predict(seed = 1)
   )
 })
 
@@ -23,19 +23,19 @@ test_that("output", {
 
   pred_single_K1 = example_fit$single_K1 %>%
     extract_posterior() %>%
-    posterior_predict()
+    posterior_predict(seed = 1)
 
   pred_single_K2 = example_fit$single_K2 %>%
     extract_posterior() %>%
-    posterior_predict()
+    posterior_predict(seed = 1)
 
   pred_specific_K1 = example_fit$specific_K1 %>%
     extract_posterior() %>%
-    posterior_predict()
+    posterior_predict(seed = 1)
 
   pred_specific_K2 = example_fit$specific_K2 %>%
     extract_posterior() %>%
-    posterior_predict()
+    posterior_predict(seed = 1)
 
   # K = 1, single prec
   expect_true(
