@@ -22,7 +22,7 @@ compute_metrics = function(models_path, precision_type) {
       extract_posterior(alpha_reference = "posterior mode")
     
     model_waic = post_sample %>% compute_WAIC() %>% .$waic
-    model_bic = post_sample %>% compute_BIC(N = 10000, seed = 1, cores = 5)
+    model_bic = post_sample %>% compute_BIC(N = 100000, seed = 1, cores = 5)
     
     data.frame(
       K = k,
