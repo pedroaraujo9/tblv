@@ -33,7 +33,7 @@ test_that("input", {
           open_progress = FALSE
         )
 
-        sm = fit$stan_fit %>% rstan::extract()
+        sm = fit$stan_fit %>% rstan::extract(pars="E")
         sm$E %>% dim()
 
 
@@ -58,7 +58,7 @@ test_that("input", {
           open_progress = FALSE
         )
 
-        sm = fit$stan_fit %>% rstan::extract()
+        sm = fit$stan_fit %>% rstan::extract(pars="E")
         sm$E %>% dim()
 
       }, expected = c(15, 306, k)

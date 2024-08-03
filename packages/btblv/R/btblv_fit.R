@@ -5,8 +5,6 @@
 #' @param precision string with the type of precision. It is "single" if all
 #' items have the same precision or "specific" if each item has its own precision
 #' parameter. Default is "single".
-#' @param intercept if "hmc" the intercept beta is estimated with HMC jointly.
-#' If "mle" beta is fixed as the mle of the model where all latent effects are 0.
 #' @param iter integer with the number of iterations
 #' @param warmup integer with the warmup size. See `rstan::sampling`.
 #' @param thin integer with the thinning size. See `rstan::sampling`.
@@ -23,7 +21,6 @@
 btblv_fit = function(btblv_data,
                      K,
                      precision = "single",
-                     intercept = "hmc",
                      iter,
                      warmup,
                      thin,
@@ -44,108 +41,43 @@ btblv_fit = function(btblv_data,
 
   if(precision == "single") {
 
-    if(intercept == "hmc") {
-
-      fit = rstan::sampling(
-        object = stanmodels$time_BLV_single_precision,
-        data = btblv_data$data_list_stan,
-        pars = c("beta_expand", "log_sigma", "kappa"),
-        include = F,
-        iter = iter,
-        warmup = warmup,
-        thin = thin,
-        chains = chains,
-        cores = cores,
-        init = inits,
-        ...
-      )
-
-    }else if(intercept == "mle") {
-
-      mle_fit = betareg::betareg(
-        y ~ factor(item) - 1 | factor(item) - 1,
-        data = btblv_data$data,
-        link = "logit",
-        link.phi = "log"
-      )
-
-      for(i in chains) {
-        inits[[i]]$beta = NULL
-      }
-
-      btblv_data$data_list_stan$beta = mle_fit$coefficients$mean
-
-      fit = rstan::sampling(
-        object = stanmodels$time_BLV_single_precision_fixed_beta,
-        data = btblv_data$data_list_stan,
-        pars = c("log_sigma", "kappa"),
-        include = F,
-        iter = iter,
-        warmup = warmup,
-        thin = thin,
-        chains = chains,
-        cores = cores,
-        init = inits,
-        ...
-      )
-    }
+    fit = rstan::sampling(
+      object = stanmodels$time_BLV_single_precision,
+      data = btblv_data$data_list_stan,
+      pars = c("beta_expand", "log_sigma", "kappa"),
+      include = F,
+      iter = iter,
+      warmup = warmup,
+      thin = thin,
+      chains = chains,
+      cores = cores,
+      init = inits,
+      ...
+    )
 
   }else if(precision == "specific"){
 
-    if(intercept == "hmc") {
 
-      fit = rstan::sampling(
-        object = stanmodels$time_BLV,
-        data = btblv_data$data_list_stan,
-        pars = c("beta_expand", "delta_raw", "log_sigma"),
-        include = FALSE,
-        iter = iter,
-        warmup = warmup,
-        thin = thin,
-        chains = chains,
-        cores = cores,
-        init = inits,
-        ...
-      )
-
-    }else if(intercept == "mle") {
-
-      mle_fit = betareg::betareg(
-        y ~ factor(item) - 1 | factor(item) - 1,
-        data = btblv_data$data,
-        link = "logit",
-        link.phi = "log"
-      )
-
-      for(i in chains) {
-        inits[[i]]$beta = NULL
-      }
-
-      btblv_data$data_list_stan$beta = mle_fit$coefficients$mean
-
-      fit = rstan::sampling(
-        object = stanmodels$time_BLV_fixed_beta,
-        data = btblv_data$data_list_stan,
-        pars = c("delta_raw", "log_sigma"),
-        include = FALSE,
-        iter = iter,
-        warmup = warmup,
-        thin = thin,
-        chains = chains,
-        cores = cores,
-        init = inits,
-        ...
-      )
-
-    }
+    fit = rstan::sampling(
+      object = stanmodels$time_BLV,
+      data = btblv_data$data_list_stan,
+      pars = c("beta_expand", "delta_raw", "log_sigma"),
+      include = FALSE,
+      iter = iter,
+      warmup = warmup,
+      thin = thin,
+      chains = chains,
+      cores = cores,
+      init = inits,
+      ...
+    )
 
   }
 
   out = list(
     stan_fit = fit,
     btblv_data = btblv_data,
-    precision = precision,
-    intercept = intercept
+    precision = precision
   )
 
   class(out) = "btblv_fit"
