@@ -7,4 +7,4 @@
 
 #### Packages
 - To run the analysis, you need to install the packages in the `/packages` folder.
-- Run the script `analysis/install_analysis_packages.R` to install them.
+- You can run `Rscript analysis/install_analysis_packages.R` in the terminal to install them.
