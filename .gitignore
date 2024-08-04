@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+*config.yaml
 test-build.R
 credentials.json
 analysis/models/*
