@@ -9,7 +9,10 @@ args = commandArgs(trailingOnly = T)[-1]
 args_list = list()
 
 for(i in 1:length(args)) {
-  name_value = args[i] %>% stringr::str_split("=", simplify = T) %>% as.character()
+  name_value = args[i] %>% 
+    stringr::str_split("=", simplify = T, n = 2) %>% 
+    as.character()
+  
   args_list[name_value[1]] = name_value[2] 
 }
 
@@ -30,8 +33,8 @@ gdrive_folder_id = args_list$gdrive_folder_id
 
 config = yaml::yaml.load_file(config_path)
 
-if(!is.null(gdrive_folder_id)) {
-  gdrive_folder_id = config$gdrive$dev_model_folder_id
+if(is.null(gdrive_folder_id)) {
+  gdrive_folder_id = config$gdrive$model_folder_id
 }
 
 save_fit_btblv(
