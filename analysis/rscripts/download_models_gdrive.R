@@ -3,7 +3,10 @@ library(tidyverse)
 library(yaml)
 
 config = yaml::yaml.load_file("config.yaml")
+
+googledrive::drive_deauth()
 googledrive::drive_auth_configure(path = config$gdrive$auth_credentials)
+googledrive::drive_auth(email = config$gdrive$email)
 
 folder = "analysis/models"
 model_folder_id = config$gdrive$model_folder_id
