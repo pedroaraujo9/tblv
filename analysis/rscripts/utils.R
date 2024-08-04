@@ -59,7 +59,7 @@ save_fit_btblv = function(K,
   }
   
   #### create model name ####
-  if(is.null(model_name_pattern) | model_name_pattern == ""){
+  if(is.null(model_name_pattern)){
     
     model_name = paste0(
       "btblv-precision=", precision, "-",
@@ -67,6 +67,13 @@ save_fit_btblv = function(K,
     )
     
   }else{
+    
+    if(model_name_pattern == "") {
+      model_name = paste0(
+        "btblv-precision=", precision, "-",
+        "K=", K, ".rds"
+      )
+    }
     
     model_name = paste0(
       "btblv-", model_name_pattern, "-precision=", precision, "-",
