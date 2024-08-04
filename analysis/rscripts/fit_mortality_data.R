@@ -16,7 +16,6 @@ for(i in 1:length(args)) {
 }
 
 print(args)
-print(args_list)
 
 # data
 data_path = args_list$data_path
@@ -28,16 +27,17 @@ warmup = args_list$warmup %>% as.numeric()
 chains = args_list$chains %>% as.numeric()
 thin = args_list$thin %>% as.numeric()
 precision = args_list$precision
+gdrive_folder_id = args_list$gdrive_folder_id
 
 # Google drive config/saving config
 path_to_save = args_list$path_to_save 
 save_gdrive = args_list$save_gdrive %>% as.logical()
 
-if(save_gdrive == TRUE) {
+if(is.null(gdrive_folder_id)) {
   gdrive_folder_id = config$gdrive$model_folder_id
-}else{
-  gdrive_folder_id = NULL
 }
+
+print(args_list)
 
 #### read data ####
 mortality_data = readRDS(data_path)
@@ -51,7 +51,13 @@ model_name = paste0(
 print(model_name)
 
 #### fit the model in case the model has not been fitted ####
-models_saved = readLines(paste0(path_to_save, "/models-saved-list.txt"))
+models_saved_path = paste0(path_to_save, "/models-saved-list.txt") 
+
+if(!file.exists(models_saved_path)) {
+  file.create(models_saved_path)
+}
+
+models_saved = readLines(models_saved_path)
 print(models_saved)
 
 if(!(model_name %in% models_saved)) {
@@ -76,25 +82,25 @@ if(!(model_name %in% models_saved)) {
     seed = 1
   )
   
-  #saveRDS(fit, paste0(path_to_save, "/",model_name))
+  saveRDS(fit, paste0(path_to_save, "/", model_name))
   
-  #if(save_gdrive == TRUE) {
-  #  googledrive::drive_deauth()
-  #  googledrive::drive_auth_configure(path = config$gdrive$auth_credentials)
-  #  googledrive::drive_auth()
+  if(save_gdrive == TRUE) {
+    googledrive::drive_deauth()
+    googledrive::drive_auth_configure(path = config$gdrive$auth_credentials)
+    googledrive::drive_auth()
     
-  #  googledrive::drive_upload(media = paste0(path_to_save, "/",model_name), 
-  #                            path = as_id(gdrive_folder_id),
-  #                            overwrite = TRUE)
-  #  
-  #  file.remove(paste0(path_to_save, "/",model_name))
-  #}
+    googledrive::drive_upload(media = paste0(path_to_save, "/", model_name), 
+                              path = as_id(gdrive_folder_id),
+                              overwrite = TRUE)
+    
+    file.remove(paste0(path_to_save, "/",model_name))
+  }
   
   # updating list with models saved
-  #c(model_name, models_saved) %>%
-  #  writeLines(paste0(path_to_save, "/models-saved-list.txt"))
+  c(model_name, models_saved) %>%
+    writeLines(paste0(path_to_save, "/models-saved-list.txt"))
   
 }else{
-  #print("Fit already exists")
+  print("Fit already exists")
 }
 

@@ -1,9 +1,0 @@
-# Human Mortality database credentials
-hmd:
-  username: 
-  password: 
-
-# Google drive credentials
-gdrive:
-  auth_credentials: 
-  model_folder_id: 
