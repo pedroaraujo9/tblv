@@ -5,7 +5,7 @@
 #' Default is TRUE.
 #' @param alpha_reference alpha reference matrix for the Procrustean matching procedure.
 #' It is "pca" for the pca eigenvalues applied to the logit(y), and
-#' "post mode" for the posterior mode, and a numeric matrix for a custom user provided.
+#' "posterior mode" for the posterior mode, and a numeric matrix for a custom user provided.
 #' Default is "pca".
 #'
 #' @return object of the class `btblv_posterior`.

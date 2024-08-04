@@ -18,8 +18,6 @@ message.
 Displays information about the the \code{btblv_data} object.
 }
 \examples{
-data("lf")
-data = create_btblv_data(lf, "mx", "age", "country", "year")
-data
+#
 
 }

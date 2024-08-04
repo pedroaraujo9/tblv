@@ -14,7 +14,7 @@ Default is TRUE.}
 
 \item{alpha_reference}{alpha reference matrix for the Procrustean matching procedure.
 It is "pca" for the pca eigenvalues applied to the logit(y), and
-"post mode" for the posterior mode, and a numeric matrix for a custom user provided.
+"posterior mode" for the posterior mode, and a numeric matrix for a custom user provided.
 Default is "pca".}
 }
 \value{

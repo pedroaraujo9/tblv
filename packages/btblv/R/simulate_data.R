@@ -60,9 +60,14 @@ simulate_data = function(btblv_posterior, replicates, seed) {
       by = "item_num"
     ) %>%
     dplyr::arrange(group_num, time_num, item_num) %>%
-    dplyr::select(item_num, group_num, time_num, mu, kappa)
+    dplyr::select(ind_num, item_num, group_num, time_num, mu, kappa) %>%
+    dplyr::right_join(
+      btblv_data$data,
+      by=c("item_num", "ind_num", "group_num", "time_num")
+    ) %>%
+    dplyr::select(item, group, time, mu, kappa)
 
-
+  # generate data from the beta
   sim_data_list = purrr::map(1:replicates, ~{
     true_beta_params = true_beta_params %>%
       dplyr::mutate(y = rbeta(n=N, mu*kappa, (1-mu)*kappa)) %>%
