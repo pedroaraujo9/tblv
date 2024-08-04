@@ -1,100 +1,51 @@
 test_that("input", {
+
   data("example_fit")
 
-  expect_no_error(
-    example_fit$single_K1 %>% extract_posterior() %>% posterior_predict(seed = 1)
-  )
+  purrr::map(example_fit, ~{
+    .x %>%
+      extract_posterior() %>%
+      posterior_predict(seed = 1) %>%
+      expect_no_error()
+  })
 
-  expect_no_error(
-    example_fit$single_K2 %>% extract_posterior() %>% posterior_predict(seed = 1)
-  )
-
-  expect_no_error(
-    example_fit$specific_K1 %>% extract_posterior() %>% posterior_predict(seed = 1)
-  )
-
-  expect_no_error(
-    example_fit$specific_K2 %>% extract_posterior() %>% posterior_predict(seed = 1)
-  )
+    purrr::map(example_fit, ~{
+      .x %>%
+        extract_posterior() %>%
+        posterior_predict(seed = 1) %>%
+        expect_no_warning()
+  })
 })
 
 test_that("output", {
+
   data("example_fit")
 
-  pred_single_K1 = example_fit$single_K1 %>%
-    extract_posterior() %>%
-    posterior_predict(seed = 1)
+  purrr::map(example_fit, ~{
+    pred = .x %>%
+      extract_posterior() %>%
+      posterior_predict(seed = 1)
 
-  pred_single_K2 = example_fit$single_K2 %>%
-    extract_posterior() %>%
-    posterior_predict(seed = 1)
+    # check if the prediction is between (0, 1)
+    expect_true(
+      all(pred$pred_post_sample < 1) & all(pred$pred_post_sample > 0)
+    )
 
-  pred_specific_K1 = example_fit$specific_K1 %>%
-    extract_posterior() %>%
-    posterior_predict(seed = 1)
+    # check if there is any NA
+    pred$pred_post_sample %>%
+      is.na() %>%
+      any() %>%
+      expect_false()
 
-  pred_specific_K2 = example_fit$specific_K2 %>%
-    extract_posterior() %>%
-    posterior_predict(seed = 1)
+    # check if there is any infinite
+    pred$pred_post_sample %>%
+      is.infinite() %>%
+      any() %>%
+      expect_false()
 
-  # K = 1, single prec
-  expect_true(
-    all(pred_single_K1$pred_post_sample < 1) & all(pred_single_K1$pred_post_sample > 0)
-  )
-
-  expect_false(
-    any(is.na(pred_single_K1$pred_post_sample))
-  )
-
-  expect_gt(
-    cor(pred_single_K1$pred_post_summary_df$mean,
-        example_fit$single_K1$btblv_data$data$y),
-    0.8
-  )
-
-  # K = 2, single prec
-  expect_true(
-    all(pred_single_K2$pred_post_sample < 1) & all(pred_single_K2$pred_post_sample > 0)
-  )
-
-  expect_false(
-    any(is.na(pred_single_K2$pred_post_sample))
-  )
-
-  expect_gt(
-    cor(pred_single_K2$pred_post_summary_df$mean,
-        example_fit$single_K2$btblv_data$data$y),
-    0.8
-  )
-
-  # K = 1, specific prec
-  expect_true(
-    all(pred_specific_K1$pred_post_sample < 1) & all(pred_specific_K1$pred_post_sample > 0)
-  )
-
-  expect_false(
-    any(is.na(pred_specific_K1$pred_post_sample))
-  )
-
-  expect_gt(
-    cor(pred_specific_K1$pred_post_summary_df$mean,
-        example_fit$specific_K1$btblv_data$data$y),
-    0.8
-  )
-
-  # K = 2, specific prec
-  expect_true(
-    all(pred_specific_K2$pred_post_sample < 1) & all(pred_specific_K2$pred_post_sample > 0)
-  )
-
-  expect_false(
-    any(is.na(pred_specific_K2$pred_post_sample))
-  )
-
-  expect_gt(
-    cor(pred_specific_K2$pred_post_summary_df$mean,
-        example_fit$specific_K2$btblv_data$data$y),
-    0.8
-  )
+    # check if pred and observed is highly correlated
+    cor(pred$pred_post_summary_df$mean, .x$btblv_data$data$y) %>%
+      expect_gt(0.8)
+  })
 
 })

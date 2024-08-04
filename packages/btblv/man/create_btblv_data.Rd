@@ -31,8 +31,8 @@ Create object with the data to be used in \code{btblv_fit}
 }
 \examples{
 data("hmad_data")
-lf = hmd_data$life_tables_5x5 \%>\%
- dplyr::filter(year \%in\% seq(1950, 2020, 5))
+lf = hmd_data$life_tables_5x5 |>
+ dplyr::filter(year \%in\% seq(1990, 2020, 5))
 data = create_btblv_data(df = lf,
                          resp_col_name = "mx",
                          item_col_name = "age",

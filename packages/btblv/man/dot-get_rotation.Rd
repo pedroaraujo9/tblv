@@ -7,12 +7,12 @@
 .get_rotation(post_sample, reference_matrix)
 }
 \arguments{
-\item{post_sample}{array with iters, param, latent dimension}
+\item{post_sample}{array with iters, param, latent dimension.}
 
-\item{reference_matrix}{reference matrix to match}
+\item{reference_matrix}{numeric matrix with reference to match.}
 }
 \value{
-list with the Procrustean transform for each iteration
+list with the Procrustean transform for each iteration.
 }
 \description{
 Compute the Procrustean matching rotation for each iteration of the posterior

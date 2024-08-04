@@ -7,10 +7,10 @@
 .compute_posterior_mean(array)
 }
 \arguments{
-\item{array}{array with posterior sample}
+\item{array}{array with posterior sample.}
 }
 \value{
-posterior mean
+posterior mean.
 }
 \description{
 Compute posterior mean from posterior sample rstan array

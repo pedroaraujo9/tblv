@@ -1,6 +1,5 @@
 test_that("input", {
 
-  # data to test
   btblv_data = hmd_data$life_tables_5x5 %>%
     dplyr::filter(year %in% seq(1980, 2015, 5)) %>%
     dplyr::filter(!(country %in% c("East Germany", "West Germany", "New Zealand Maori",
@@ -15,54 +14,55 @@ test_that("input", {
     )
 
   for(k in c(1, 3)) {
-    expect_equal(
-      {
-        fit = btblv_fit(
-          btblv_data,
-          K = k,
-          precision = "single",
-          iter = 10,
-          warmup = 5,
-          thin = 1,
-          chains = 3,
-          cores = 3,
-          seed = 1,
-          refresh = 0,
-          show_messages = FALSE,
-          verbose = FALSE,
-          open_progress = FALSE
-        )
+    for(prec in c("single", "specific")){
 
-        sm = fit$stan_fit %>% rstan::extract(pars="E")
-        sm$E %>% dim()
+      fit = btblv_fit(
+        btblv_data,
+        K = k,
+        precision = prec,
+        iter = 10,
+        warmup = 5,
+        thin = 1,
+        chains = 2,
+        cores = 2,
+        seed = 1,
+        refresh = 0,
+        show_messages = FALSE,
+        verbose = FALSE,
+        open_progress = FALSE
+      ) %>%
+        suppressWarnings()
 
+      sm = fit$stan_fit %>% rstan::extract()
 
-      }, expected = c(15, 306, k)
-    )
+      sm %>%
+        names() %>%
+        expect_contains(c("alpha", "beta", "log_kappa",
+                          "theta", "E", "phi", "sigma"))
+      sm$E %>%
+        dim() %>%
+        expect_equal(c(10, 306, k))
 
-    expect_equal(
-      {
-        fit = btblv_fit(
-          btblv_data,
-          K = k,
-          precision = "specific",
-          iter = 10,
-          warmup = 5,
-          thin = 1,
-          chains = 3,
-          cores = 3,
-          seed = 1,
-          refresh = 0,
-          show_messages = FALSE,
-          verbose = FALSE,
-          open_progress = FALSE
-        )
+      sm$E %>%
+        is.na() %>%
+        any() %>%
+        expect_false()
 
-        sm = fit$stan_fit %>% rstan::extract(pars="E")
-        sm$E %>% dim()
+      if(prec == "single") {
 
-      }, expected = c(15, 306, k)
-    )
+        sm$log_kappa %>%
+          dim() %>%
+          length() %>%
+          expect_equal(1)
+
+      }else if(prec == "specific") {
+
+        sm$log_kappa %>%
+          dim() %>%
+          length() %>%
+          expect_equal(2)
+      }
+    }
 
   }
 

@@ -7,13 +7,13 @@
 .compute_converge_metrics(array)
 }
 \arguments{
-\item{array}{array with dimension (iters, chains, ...)}
+\item{array}{array with dimension (iters, chains, ...).}
 }
 \value{
-data.frame with the metrics and id for first dimension, k for the sencond
+data.frame with the metrics and id for first dimension, k for the second.
 }
 \description{
-Computes the Rhat, ESS and ESS bulk for a posterior sample
+Computes the Rhat, ESS and ESS bulk for a posterior sample.
 }
 \examples{
 #

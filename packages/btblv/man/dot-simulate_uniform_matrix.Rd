@@ -7,16 +7,16 @@
 .simulate_uniform_matrix(ncol, nrow, lower, upper)
 }
 \arguments{
-\item{ncol}{number of cols}
+\item{ncol}{number of cols.}
 
-\item{nrow}{number of rows}
+\item{nrow}{number of rows.}
 
-\item{lower}{min}
+\item{lower}{min.}
 
-\item{upper}{max}
+\item{upper}{max.}
 }
 \value{
-random matrix
+numeric matrix.
 }
 \description{
 Simulate matrix from a uniform distribution

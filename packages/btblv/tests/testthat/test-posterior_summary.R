@@ -1,19 +1,16 @@
 test_that("input", {
+
   data("example_fit")
 
-  expect_no_error(
-    example_fit$single_K1 %>% extract_posterior() %>% posterior_summary()
-  )
+  purrr::map(example_fit, ~{
+    .x %>%
+      extract_posterior() %>%
+      posterior_summary() %>%
+      expect_no_error()
 
-  expect_no_error(
-    example_fit$single_K2 %>% extract_posterior() %>% posterior_summary()
-  )
-
-  expect_no_error(
-    example_fit$specific_K1 %>% extract_posterior() %>% posterior_summary()
-  )
-
-  expect_no_error(
-    example_fit$specific_K2 %>% extract_posterior() %>% posterior_summary()
-  )
+    .x %>%
+      extract_posterior() %>%
+      posterior_summary() %>%
+      expect_no_warning()
+  })
 })

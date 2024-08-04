@@ -2,20 +2,20 @@
 % Please edit documentation in R/print.btblv_data.R
 \name{print.btblv_data}
 \alias{print.btblv_data}
-\title{Print method for btblv_data object}
+\title{Print method for \code{btblv_data} object}
 \usage{
-\method{print}{btblv_data}(btblv_data, ...)
+\method{print}{btblv_data}(x, ...)
 }
 \arguments{
-\item{btblv_data}{object from the class btblv_data}
+\item{x}{\code{btblv_data} object generate by \code{btblv::btblv_data}.}
 
-\item{...}{extra arguments}
+\item{...}{extra arguments.}
 }
 \value{
-print message
+message.
 }
 \description{
-Displays information about the the btblv_data object
+Displays information about the the \code{btblv_data} object.
 }
 \examples{
 data("lf")

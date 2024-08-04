@@ -1,11 +1,11 @@
-#' Print method for btblv_data object
+#' Print method for `btblv_data` object
 #'
-#' Displays information about the the btblv_data object
+#' Displays information about the the `btblv_data` object.
 #'
-#' @param btblv_data object from the class btblv_data
-#' @param ... extra arguments
+#' @param x `btblv_data` object generate by `btblv::btblv_data`.
+#' @param ... extra arguments.
 #'
-#' @return print message
+#' @return message.
 #' @export
 #'
 #' @examples
@@ -13,7 +13,7 @@
 #' data = create_btblv_data(lf, "mx", "age", "country", "year")
 #' data
 #'
-print.btblv_data = function(btblv_data, ...) {
+print.btblv_data = function(x, ...) {
   N = btblv_data$data_list_stan$N
   J = btblv_data$data_list_stan$J
   n = btblv_data$data_list_stan$n

@@ -1,4 +1,5 @@
 test_that("input", {
+
   data("example_fit")
 
   purrr::map(example_fit, ~{

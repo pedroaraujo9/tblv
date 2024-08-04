@@ -5,11 +5,8 @@ test_that("input", {
   purrr::map(example_fit, ~{
     .x %>%
       extract_posterior() %>%
+      simulate_data(seed = 1, replicates = 3) %>%
       expect_no_error()
-
-    .x %>%
-      extract_posterior() %>%
-      expect_no_warning()
   })
 
 })

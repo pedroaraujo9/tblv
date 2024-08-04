@@ -7,10 +7,10 @@
 logit(x)
 }
 \arguments{
-\item{x}{numeric value between 0, and 1}
+\item{x}{numeric value between 0, and 1.}
 }
 \value{
-logit of the numeric
+logit of the numeric.
 }
 \description{
 Logit function

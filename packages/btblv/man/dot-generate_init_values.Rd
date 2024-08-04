@@ -2,26 +2,26 @@
 % Please edit documentation in R/utils.R
 \name{.generate_init_values}
 \alias{.generate_init_values}
-\title{Generate init values for the MCMC chains}
+\title{Generate init values for the MCMC chains for the btblv model}
 \usage{
 .generate_init_values(btblv_data, K, chains, precision = "single", seed)
 }
 \arguments{
-\item{btblv_data}{object of class btblv_data with data information}
+\item{btblv_data}{object of class btblv_data with data information.}
 
-\item{K}{integer with the latent dimension size}
+\item{K}{integer with the latent dimension size.}
 
-\item{chains}{integer with number of chains}
+\item{chains}{integer with number of chains.}
 
-\item{precision}{string with type of precision, \code{single} for one, \code{multiple} for multiple}
+\item{precision}{string with type of precision, \code{single} for one, \code{multiple} for multiple.}
 
-\item{seed}{integer with the random seed}
+\item{seed}{integer with the random seed.}
 }
 \value{
-list of list with the initial values for each chain
+list of list with the initial values for each chain.
 }
 \description{
-Generate init values for the MCMC chains
+Generate init values for the MCMC chains for the btblv model
 }
 \examples{
 #

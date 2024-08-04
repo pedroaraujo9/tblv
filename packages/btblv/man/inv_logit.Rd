@@ -7,10 +7,10 @@
 inv_logit(x)
 }
 \arguments{
-\item{x}{numeric real value}
+\item{x}{numeric value.}
 }
 \value{
-invese of the logit
+numeric value inverse of the logit.
 }
 \description{
 Inverse of the logit function
