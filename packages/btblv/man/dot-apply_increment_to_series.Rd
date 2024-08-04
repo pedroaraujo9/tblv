@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{.apply_increment_to_series}
 \alias{.apply_increment_to_series}
-\title{Generate AR1 series from incremenets of a group stacked increments}
+\title{Generate AR1 series from increments of a group stacked increments}
 \usage{
 .apply_increment_to_series(E, group_index, sigma, phi)
 }
@@ -20,7 +20,7 @@ of E. It indicates the group of the elements of E.}
 numeric matrix with serie E.
 }
 \description{
-Generate AR1 series from incremenets of a group stacked increments
+Generate AR1 series from increments of a group stacked increments
 }
 \examples{
 #

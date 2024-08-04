@@ -17,52 +17,62 @@ chains = 2
 cores = 2
 seed = 1
 
-data = btblv::create_btblv_data(df = lf,
-                                resp_col_name = "mx",
-                                item_col_name = "age",
-                                group_col_name = "country",
-                                time_col_name = "year")
+data = btblv::create_btblv_data(
+  df = lf,
+  resp_col_name = "mx",
+  item_col_name = "age",
+  group_col_name = "country",
+  time_col_name = "year"
+)
 
-example_fit_single_K2 = btblv_fit(data,
-                                  precision = "single",
-                                  K = 2,
-                                  iter = iter,
-                                  warmup = warmup,
-                                  thin = thin,
-                                  chains = chains,
-                                  cores = cores,
-                                  seed = seed)
+example_fit_single_K2 = fit_btblv(
+  data,
+  precision = "single",
+  K = 2,
+  iter = iter,
+  warmup = warmup,
+  thin = thin,
+  chains = chains,
+  cores = cores,
+  seed = seed
+)
 
 
-example_fit_single_K1 = btblv_fit(data,
-                                  precision = "single",
-                                  K = 1,
-                                  iter = iter,
-                                  warmup = warmup,
-                                  thin = thin,
-                                  chains = chains,
-                                  cores = cores,
-                                  seed = seed)
+example_fit_single_K1 = fit_btblv(
+  data,
+  precision = "single",
+  K = 1,
+  iter = iter,
+  warmup = warmup,
+  thin = thin,
+  chains = chains,
+  cores = cores,
+  seed = seed
+)
 
-example_fit_specific_K2 = btblv_fit(data,
-                                    precision = "specific",
-                                    K = 2,
-                                    iter = iter,
-                                    warmup = warmup,
-                                    thin = thin,
-                                    chains = chains,
-                                    cores = cores,
-                                    seed = seed)
+example_fit_specific_K2 = fit_btblv(
+  data,
+  precision = "specific",
+  K = 2,
+  iter = iter,
+  warmup = warmup,
+  thin = thin,
+  chains = chains,
+  cores = cores,
+  seed = seed
+)
 
-example_fit_specific_K1 = btblv_fit(data,
-                                    precision = "specific",
-                                    K = 1,
-                                    iter = iter,
-                                    warmup = warmup,
-                                    thin = thin,
-                                    chains = chains,
-                                    cores = cores,
-                                    seed = seed)
+example_fit_specific_K1 = fit_btblv(
+  data,
+  precision = "specific",
+  K = 1,
+  iter = iter,
+  warmup = warmup,
+  thin = thin,
+  chains = chains,
+  cores = cores,
+  seed = seed
+)
 
 example_fit = list(
   "single_K1" = example_fit_single_K1,
@@ -71,5 +81,5 @@ example_fit = list(
   "specific_K2" = example_fit_specific_K2
 )
 
-usethis::use_data(example_fit, overwrite = T)
+usethis::use_data(example_fit, overwrite = T, )
 

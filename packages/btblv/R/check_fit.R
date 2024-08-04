@@ -27,7 +27,7 @@ check_fit = function(posterior_predict, posterior_summary) {
     dplyr::select(-ind_num) %>%
     stats::dist() %>%
     base::as.matrix() %>%
-    .[base::lower.tri(.)]
+    .get_lower_tri()
 
   pred_post_dist = pred_post_summary_df %>%
     dplyr::select(ind_num, item, mean) %>%
@@ -35,36 +35,36 @@ check_fit = function(posterior_predict, posterior_summary) {
     dplyr::select(-ind_num) %>%
     stats::dist() %>%
     base::as.matrix() %>%
-    .[base::lower.tri(.)]
+    .get_lower_tri()
 
   latent_distance = posterior_summary$posterior_mean$theta %>%
     stats::dist() %>%
     as.matrix() %>%
-    .[base::lower.tri(.)]
+    .get_lower_tri()
 
   distance_metrics = tibble::tibble(
-    RMSE = sqrt(mean((observed_dist - pred_post_dist)^2)),
-    MAE = mean(abs(observed_dist - pred_post_dist)),
-    MAPE = 100*mean((abs(observed_dist - pred_post_dist)/abs(observed_dist))),
-    corr = cor(latent_distance, observed_dist)
+    RMSE = .compute_RMSE(observed_dist, pred_post_dist),
+    MAE = .compute_MAE(observed_dist, pred_post_dist),
+    MAPE = .compute_MAPE(observed_dist, pred_post_dist),
+    corr = cor(latent_distance, observed_dist, method = "spearman")
   )
 
   global_metrics = pred_post_summary_df %>%
-    dplyr::summarise(RMSE = sqrt(mean((y - mean)^2)),
-                     MAE = mean(abs(y - mean)),
-                     MAPE = 100*mean((abs(y - mean)/abs(y))))
+    dplyr::summarise(RMSE = .compute_RMSE(y, mean),
+                     MAE = .compute_MAE(y, mean),
+                     MAPE = .compute_MAPE(y, mean))
 
   item_metrics = pred_post_summary_df %>%
     dplyr::group_by(item) %>%
-    dplyr::summarise(RMSE = sqrt(mean((y - mean)^2)),
-                     MAE = mean(abs(y - mean)),
-                     MAPE = 100*mean((abs(y - mean)/abs(y))))
+    dplyr::summarise(RMSE = .compute_RMSE(y, mean),
+                     MAE = .compute_MAE(y, mean),
+                     MAPE = .compute_MAPE(y, mean))
 
   group_metrics = pred_post_summary_df %>%
     dplyr::group_by(group) %>%
-    dplyr::summarise(RMSE = sqrt(mean((y - mean)^2)),
-                     MAE = mean(abs(y - mean)),
-                     MAPE = 100*mean((abs(y - mean)/abs(y))))
+    dplyr::summarise(RMSE = .compute_RMSE(y, mean),
+                     MAE = .compute_MAE(y, mean),
+                     MAPE = .compute_MAPE(y, mean))
 
   check_metrics = list(
     global_metrics = global_metrics,

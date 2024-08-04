@@ -15,10 +15,7 @@ approx_mloglike = function(btblv_posterior, N, seed, cores = 1) {
   post_summ = btblv_posterior |> btblv::posterior_summary()
   btblv_data = btblv_posterior$btblv_data
 
-  data_wide = btblv_data$data |>
-    dplyr::select(ind_num, group_num, item, y) |>
-    dplyr::arrange(ind_num) |>
-    tidyr::spread(item, y)
+  data_wide = btblv_data$data_wide
   
   data_matrix = btblv_data$data_list_stan$x
   K = btblv_data$data_list_stan$K

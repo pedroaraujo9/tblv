@@ -42,21 +42,25 @@ if(!(model_name %in% models_saved)) {
   #### data ####
   lf = readRDS("analysis/data/data_model.rds")
   
-  data = btblv::create_btblv_data(df = lf,
-                                  resp_col_name = "mx",
-                                  item_col_name = "age",
-                                  group_col_name = "country",
-                                  time_col_name = "year")
+  data = btblv::create_btblv_data(
+    df = lf,
+    resp_col_name = "mx",
+    item_col_name = "age",
+    group_col_name = "country",
+    time_col_name = "year"
+  )
   
-  fit = btblv_fit(data,
-                  precision = precision,
-                  K = K,
-                  iter = iter,
-                  warmup = warmup,
-                  thin = thin,
-                  chains = chains,
-                  cores = chains,
-                  seed = 1)
+  fit = fit_btblv(
+    data,
+    precision = precision,
+    K = K,
+    iter = iter,
+    warmup = warmup,
+    thin = thin,
+    chains = chains,
+    cores = chains,
+    seed = 1
+  )
   
   saveRDS(fit, paste0(path_to_save, "/",model_name))
   

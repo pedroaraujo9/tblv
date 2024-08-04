@@ -8,7 +8,7 @@
 #' \itemize{
 #'   \item `pred_post_summary_df` - `data.frame` with the group, time, item,
 #'   and summary statistics for the observation.
-#'   \item `pred_post_sample` - matrix (iters x obserations) with the posterior predictive sample.
+#'   \item `pred_post_sample` - matrix (iteration x observations) with the posterior predictive sample.
 #' }
 #' @export
 #'

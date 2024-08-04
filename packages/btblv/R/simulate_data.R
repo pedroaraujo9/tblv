@@ -77,7 +77,7 @@ simulate_data = function(btblv_posterior, replicates, seed) {
   out = list(
     sim_data_list = sim_data_list,
     btblv_data = btblv_data,
-    true_parameters = btblv_posterior$post_sample_array,
+    true_parameters = post_summary$posterior_mean,
     seed = seed
   )
 

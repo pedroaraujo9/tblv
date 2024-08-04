@@ -16,7 +16,7 @@ test_that("input", {
   for(k in c(1, 3)) {
     for(prec in c("single", "specific")){
 
-      fit = btblv_fit(
+      fit = fit_btblv(
         btblv_data,
         K = k,
         precision = prec,

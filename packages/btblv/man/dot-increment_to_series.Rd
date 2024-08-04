@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{.increment_to_series}
 \alias{.increment_to_series}
-\title{Generate AR1 serie from the incremenets and parameters}
+\title{Generate AR1 series from the increments and parameters}
 \usage{
 .increment_to_series(E, sigma, phi)
 }
@@ -14,10 +14,10 @@
 \item{phi}{numeric value with phi parameter.}
 }
 \value{
-numeric matrix with AR1 serie
+numeric matrix with AR1 series.
 }
 \description{
-Generate AR1 serie from the incremenets and parameters
+Generate AR1 series from the increments and parameters
 }
 \examples{
 #

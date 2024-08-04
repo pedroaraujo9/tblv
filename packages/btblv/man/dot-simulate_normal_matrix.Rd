@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{.simulate_normal_matrix}
 \alias{.simulate_normal_matrix}
-\title{Simualte matrix from normal distribution}
+\title{Simulate matrix from normal distribution}
 \usage{
 .simulate_normal_matrix(ncol, nrow, mu, sigma)
 }
@@ -19,7 +19,7 @@
 random matrix
 }
 \description{
-Simualte matrix from normal distribution
+Simulate matrix from normal distribution
 }
 \examples{
 # .simulate_normal_matrix(ncol=100, nrow=2, mu=10, sigma=3)

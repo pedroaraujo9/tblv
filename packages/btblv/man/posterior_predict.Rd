@@ -18,7 +18,7 @@ A list with the elements:
 \itemize{
 \item \code{pred_post_summary_df} - \code{data.frame} with the group, time, item,
 and summary statistics for the observation.
-\item \code{pred_post_sample} - matrix (iters x obserations) with the posterior predictive sample.
+\item \code{pred_post_sample} - matrix (iteration x observations) with the posterior predictive sample.
 }
 }
 \description{

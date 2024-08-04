@@ -20,23 +20,25 @@ test_that("input", {
 
 test_that("output", {
   
-  purrr::map(btblv::example_fit, ~{
-    mloglike = .x %>%
-      btblv::extract_posterior() %>%
-      approx_mloglike(N = 500, cores = 1, seed = 1) %>%
-      .$aprrox_mloglike
+  for(cores in c(1, 2)) {
     
-    expect_false(any(is.na(mloglike)))
-    expect_false(any(is.infinite(mloglike)))
-  })
+    purrr::map(btblv::example_fit, ~{
+      mloglike = .x %>%
+        btblv::extract_posterior() %>%
+        approx_mloglike(N = 400, cores = cores, seed = 1) %>%
+        .$aprrox_mloglike
+      
+      mloglike %>%
+        is.na() %>%
+        any() %>%
+        expect_false()
+      
+      mloglike %>%
+        is.infinite() %>%
+        any() %>%
+        expect_false()
+      
+    })
+  }
   
-  purrr::map(btblv::example_fit, ~{
-    mloglike = .x %>%
-      btblv::extract_posterior() %>%
-      approx_mloglike(N = 500, cores = 2, seed = 1) %>%
-      .$aprrox_mloglike
-    
-    expect_false(any(is.na(mloglike)))
-    expect_false(any(is.infinite(mloglike)))
-  })
 })

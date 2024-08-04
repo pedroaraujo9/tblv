@@ -9,15 +9,13 @@
 #' @export
 #'
 #' @examples
-#' data("lf")
-#' data = create_btblv_data(lf, "mx", "age", "country", "year")
-#' data
+#' #
 #'
 print.btblv_data = function(x, ...) {
-  N = btblv_data$data_list_stan$N
-  J = btblv_data$data_list_stan$J
-  n = btblv_data$data_list_stan$n
-  Ng = btblv_data$data_list_stan$Ng
+  N = x$data_list_stan$N
+  J = x$data_list_stan$J
+  n = x$data_list_stan$n
+  Ng = x$data_list_stan$Ng
 
   cat(paste0(
     "Total number of observations: ", N, "\n",
