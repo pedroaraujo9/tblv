@@ -6,6 +6,5 @@
 test-build.R
 credentials.json
 analysis/models/*
-results/*
-save_test/*
+analysis/tests/testthat/save_test/*
 
