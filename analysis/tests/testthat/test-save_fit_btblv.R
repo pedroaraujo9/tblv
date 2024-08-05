@@ -17,12 +17,13 @@ googledrive::drive_rm( googledrive::as_id(gdrive_files$id))
 
 # fixed parameters
 K = 2
-iter = 10 
-warmup = 5
+iter = 30 
+warmup = 15
 thin = 1 
 chains = 2
 data_path = "../../data/data_model.rds"
 local_save_path = temp_test_dir
+mc_samples = 200
 
 # tests
 testthat::test_that("inputs", {
@@ -39,6 +40,7 @@ testthat::test_that("inputs", {
       save_fit_btblv(
         K = K, 
         iter = iter, 
+        mc_samples = mc_samples,
         warmup = warmup, 
         thin = thin, 
         chains = chains,
@@ -65,6 +67,7 @@ testthat::test_that("inputs", {
       save_fit_btblv(
         K = K, 
         iter = iter, 
+        mc_samples = mc_samples,
         warmup = warmup, 
         thin = thin, 
         chains = chains,
@@ -92,6 +95,7 @@ testthat::test_that("inputs", {
       save_fit_btblv(
         K = K, 
         iter = iter, 
+        mc_samples = mc_samples,
         warmup = warmup, 
         thin = thin, 
         chains = chains,
@@ -120,6 +124,7 @@ testthat::test_that("inputs", {
       save_fit_btblv(
         K = K, 
         iter = iter, 
+        mc_samples = mc_samples,
         warmup = warmup, 
         thin = thin, 
         chains = chains,

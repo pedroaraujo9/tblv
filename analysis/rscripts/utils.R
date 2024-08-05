@@ -1,10 +1,43 @@
 library(tidyverse)
 library(btblv)
 
+compute_model_metrics = function(model_fit, 
+                                 mc_samples, 
+                                 cores,
+                                 seed) {
+  
+  post = model_fit %>% 
+    btblv::extract_posterior(alpha_reference = "posterior mode")
+  
+  appx =  post %>%
+    tblvArmaUtils::approx_mloglike(
+      N = mc_samples, 
+      seed = seed, 
+      cores = cores
+    )
+  
+  bic = tblvArmaUtils::compute_BIC(
+    btblv_posterior = post, 
+    approx_mloglike = appx, cores = 1, seed = 1
+  )
+  
+  waic = compute_WAIC(post)
+  
+  metrics = list(
+    appx = appx,
+    bic = bic, 
+    waic = waic
+  )
+  
+  return(metrics)
+}
+
+
 #' Fit btblv model and save it locally or in a google drive folder
 #'
 #' @param K integer with the latent dimension size.
 #' @param iter integer with the number of iterations
+#' @param mc_samples monte carlo samples for the marginal likelihood approximation.
 #' @param warmup integer with the warm-up size. See `rstan::sampling`.
 #' @param thin integer with the thinning size. See `rstan::sampling`.
 #' @param chains integer with the number of chains. See `rstan::sampling`.
@@ -28,6 +61,7 @@ library(btblv)
 #' 
 save_fit_btblv = function(K, 
                           iter, 
+                          mc_samples,
                           warmup, 
                           thin, 
                           chains,
@@ -114,7 +148,7 @@ save_fit_btblv = function(K,
       time_col_name = "year"
     )
     
-    fit = btblv::fit_btblv(
+    btblv_fit = btblv::fit_btblv(
       btblv_data = data,
       precision = precision,
       K = K,
@@ -125,6 +159,15 @@ save_fit_btblv = function(K,
       cores = chains,
       seed = seed,
       ...
+    )
+    
+    metrics = compute_model_metrics(
+      btblv_fit, mc_samples = mc_samples, cores = chains, seed = seed
+    )
+    
+    fit = list(
+      btblv_fit = btblv_fit,
+      metrics = metrics
     )
     
     if(save_gdrive == TRUE) {
@@ -156,20 +199,21 @@ download_models_gdrive = function(gdrive_auth_credentials,
                                   gdrive_folder_id, 
                                   local_folder_path) {
   
-
+  
   googledrive::drive_deauth()
   googledrive::drive_auth_configure(path = gdrive_auth_credentials)
   googledrive::drive_auth(email = gdrive_auth_email)
   
   models = drive_ls(path = as_id(gdrive_folder_id))
-
+  
   for(i in 1:nrow(models)) {
     drive_download(as_id(models$id[i]),
-                   path = file.path(local_folder_path, "/",models$name[i]),
+                   path = file.path(local_folder_path, models$name[i]),
                    overwrite = TRUE)
   }
   
   return(TRUE)
 }
+
 
 
