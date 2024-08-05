@@ -30,6 +30,7 @@ save_gdrive = args_list$save_gdrive %>% as.logical()
 data_path = args_list$data_path
 local_save_path = args_list$local_save_path
 gdrive_folder_id = args_list$gdrive_folder_id
+mc_samples = args_list$mc_samples %>% as.numeric()
 
 config = yaml::yaml.load_file(config_path)
 
@@ -40,6 +41,7 @@ if(is.null(gdrive_folder_id)) {
 save_fit_btblv(
   K = K, 
   iter = iter, 
+  mc_samples = mc_samples,
   warmup = warmup, 
   thin = thin, 
   chains = chains,
