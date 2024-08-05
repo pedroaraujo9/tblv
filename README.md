@@ -1,6 +1,6 @@
 ## Code to fit time-dependent beta latent variable models (time-BLV)
 
-- In the folder`analysis`, there are several scripts used to fit the model.
+- In the folder`analysis` there are several scripts used to fit the model.
 - In the folder `packages` there are the packages developed to fit the model.
 
 ## Instructions 
@@ -22,8 +22,9 @@
   
   # Google Drive credentials
   gdrive:
-    auth_credentials: 
-    model_folder_id: 
-    dev_model_folder_id: 
+    auth_credentials: # auth credentials for the Google Drive API
+    model_folder_id: # folder id for the model fit
+    dev_model_folder_id: # folder id to run tests
+    simulation_folder_id: # folder id for the simulation study
     email: 
   ```
