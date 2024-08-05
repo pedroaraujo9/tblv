@@ -46,7 +46,7 @@ metrics_path = paste0("analysis/results/", list.files("analysis/results"))
 metrics_path
 
 # single precision
-single_prec_path = "analysis/results/model_choice_metrics_single_prec.rds"
+single_prec_path = "analysis/results/model_choice_metrics_single.rds"
 
 if(!(single_prec_path %in% metrics_path)) {
   metrics_single_prec = compute_metrics(models_path, "single")
@@ -57,7 +57,7 @@ if(!(single_prec_path %in% metrics_path)) {
 saveRDS(metrics_single_prec, single_prec_path)
 
 # specific precision
-specific_prec_path = "analysis/results/model_choice_metrics_specific_prec.rds"
+specific_prec_path = "analysis/results/model_choice_metrics_specific.rds"
 
 if(!(specific_prec_path %in% metrics_path)) {
   metrics_specific_prec = compute_metrics(models_path, "specific")
@@ -76,3 +76,5 @@ metrics_specific_prec
 metrics_specific_prec$BIC %>% plot()
 metrics_specific_prec$WAIC %>% plot()
 
+metrics_single_prec$BIC %>% which.min()
+metrics_specific_prec$BIC %>% which.min()
