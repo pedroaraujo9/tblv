@@ -10,7 +10,7 @@
 - To run the analysis, we need to install the packages in the `/packages` folder.
 - Run `Rscript analysis/install_analysis_packages.R` in the terminal to install them.
 
-#### Config file 
+#### config.yaml file 
 - To generate the data and access Google Drive to upload and download the models, it is necessary to provide a file called `confit.yaml` at the root of the repository `tblv/`.
 - The file has the following structure:
 
