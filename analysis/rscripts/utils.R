@@ -151,4 +151,25 @@ save_fit_btblv = function(K,
   }
 }
 
+download_models_gdrive = function(gdrive_auth_credentials,
+                                  gdrive_auth_email, 
+                                  gdrive_folder_id, 
+                                  local_folder_path) {
+  
+
+  googledrive::drive_deauth()
+  googledrive::drive_auth_configure(path = gdrive_auth_credentials)
+  googledrive::drive_auth(email = gdrive_auth_email)
+  
+  models = drive_ls(path = as_id(gdrive_folder_id))
+
+  for(i in 1:nrow(models)) {
+    drive_download(as_id(models$id[i]),
+                   path = file.path(local_folder_path, "/",models$name[i]),
+                   overwrite = TRUE)
+  }
+  
+  return(TRUE)
+}
+
 

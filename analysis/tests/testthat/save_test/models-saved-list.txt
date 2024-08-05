@@ -1,4 +1,0 @@
-btblv-trueK=3-repl=1-precision=single-K=2.rds
-btblv-precision=single-K=2.rds
-btblv-trueK=3-repl=1-precision=single-K=1.rds
-btblv-precision=single-K=1.rds

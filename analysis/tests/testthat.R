@@ -2,6 +2,6 @@ library(testthat)
 library(btblv)
 library(tidyverse)
 
-print(getwd())
 source("../rscripts/utils.R")
-test_file("testthat/test-utils.R")
+test_file("testthat/test-save_fit_btblv.R")
+test_file("testthat/test-download_models_gdrive.R")
