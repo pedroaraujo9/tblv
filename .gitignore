@@ -7,4 +7,5 @@ test-build.R
 credentials.json
 analysis/models/*
 analysis/tests/testthat/save_test/*
+slurm-*
 

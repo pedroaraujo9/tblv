@@ -5,7 +5,7 @@
 #SBATCH -N 1
 
 # Set the number of tasks/cores per node required 
-#SBATCH -n 35
+#SBATCH -n 30
 
 # Set the walltime of the job to 1 hour (format is hh:mm:ss)
 #SBATCH -t 100:00:00
@@ -21,9 +21,9 @@
 
 #!/bin/bash -l
 
-iter=4000
-warmup=2000
-thin=5
+iter=100
+warmup=50
+thin=2
 chains=3
 precision="single"
 config_path="config.yaml" 
