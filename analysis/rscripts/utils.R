@@ -204,10 +204,10 @@ download_models_gdrive = function(gdrive_auth_credentials,
   googledrive::drive_auth_configure(path = gdrive_auth_credentials)
   googledrive::drive_auth(email = gdrive_auth_email)
   
-  models = drive_ls(path = as_id(gdrive_folder_id))
+  models = googledrive::drive_ls(path = as_id(gdrive_folder_id))
   
   for(i in 1:nrow(models)) {
-    drive_download(as_id(models$id[i]),
+    googledrive::drive_download(googledrive::as_id(models$id[i]),
                    path = file.path(local_folder_path, models$name[i]),
                    overwrite = TRUE)
   }
