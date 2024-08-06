@@ -1,9 +1,9 @@
 #!/bin/bash -l
 
-iter=10
-warmup=5
+iter=50
+warmup=25
 thin=1
-mc_samples=100
+mc_samples=1000
 chains=3
 precision="single"
 config_path="config.yaml" 

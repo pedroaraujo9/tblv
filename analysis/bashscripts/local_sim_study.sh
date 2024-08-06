@@ -8,6 +8,6 @@ for trueK in "${trueKs[@]}"; do
     data_path="analysis/data/simulation-study/sim_data_trueK=$trueK-replicate=$repl.rds"
     echo $model_name_pattern 
     echo $data_path
-    bash analysis/bashscripts/local_fit_sim_data.sh "$model_name_pattern" "$data_path"
+    bash analysis/bashscripts/local_fit_sim_data.sh $model_name_pattern $data_path
   done
 done
