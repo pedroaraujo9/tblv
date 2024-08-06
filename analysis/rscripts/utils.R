@@ -7,7 +7,7 @@ compute_model_metrics = function(model_fit,
                                  seed) {
   
   post = model_fit %>% 
-    btblv::extract_posterior(alpha_reference = "posterior mode")
+    btblv::extract_posterior(alpha_reference = "mode")
   
   appx =  post %>%
     tblvArmaUtils::approx_mloglike(
