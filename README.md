@@ -26,5 +26,5 @@
     model_folder_id: # folder id for the model fit
     dev_model_folder_id: # folder id to run tests
     simulation_folder_id: # folder id for the simulation study
-    email: 
+    email: #Google drive account e-mail
   ```
