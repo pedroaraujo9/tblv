@@ -6,8 +6,10 @@ for(K in c(2, 4)) {
     paste0("analysis/models/btblv-precision=single-K=", K, ".rds")
   )
   
-  post = fit %>% btblv::extract_posterior()
-  sim_data = post %>% btblv::simulate_data(replicates = 30, seed = 1)
+  post = fit |> btblv::extract_posterior()
+  sim_data = post |> btblv::simulate_data(replicates = 30, seed = 1)
+  
+  saveRDS(sim_data, paste0("analysis/data/sim_data_", K, ".rds"))
   
   for(i in 1:length(sim_data$sim_data_list)) {
     file_name = paste0(
@@ -15,7 +17,14 @@ for(K in c(2, 4)) {
       "-replicate=", i, ".rds"
     )
     
-    sim_data$sim_data_list[[i]] %>%
+    sim_data$sim_data_list[[i]] |>
       saveRDS(file_name)
   }  
 }
+
+
+
+
+
+
+

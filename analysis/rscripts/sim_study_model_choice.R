@@ -7,6 +7,30 @@ models = models[str_detect(models, "btblv-trueK")]
 models = file.path(sim_study_path, models)
 models
 
+models[2]
+
+fit1 = readRDS(models[1])
+fit2 = readRDS(models[2])
+
+fit$metrics$appx$mloglike
+post = fit$btblv_fit %>% extract_posterior(alpha_reference = "posterior mode")
+summ = post %>% posterior_summary()
+
+compute_BIC(post, seed = 1, N = 1000)
+
+summ$posterior_mean$log_kappa
+sim_data$true_parameters$log_kappa
+
+mean(sim_data$sim_data_list[[1]]$mx == fit$btblv_fit$btblv_data$df$mx)
+
+
+sim_data = readRDS("analysis/data/sim_data_2.rds")
+plot(log(sim_data$true_parameters$sigma), log(summ$posterior_mean$sigma))
+abline(a=0, b=1)
+conv = post %>% check_convergence()
+
+
+
 sim_study_metrics = purrr:::map_df(models, ~{
   
   print(.x)
@@ -46,6 +70,8 @@ sim_study_metrics_tidy = sim_study_metrics %>%
   mutate(metric = factor(metric), trueK = factor(trueK)) %>%
   as_tibble()
 
+
+sim_study_metrics_tidy$metric
 
 # selected model 
 sim_study_metrics_tidy %>%

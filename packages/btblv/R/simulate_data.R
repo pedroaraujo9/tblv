@@ -79,6 +79,8 @@ simulate_data = function(btblv_posterior, replicates, seed) {
 
   })
 
+  post_summary$posterior_mean$theta = theta
+
   out = list(
     sim_data_list = sim_data_list,
     btblv_data = btblv_data,
