@@ -1,5 +1,6 @@
 library(tidyverse)
 library(btblv)
+library(patchwork)
 
 str_extract_int_info = function(x, pattern) {
   x %>% 
@@ -23,31 +24,35 @@ K = models_path %>% str_extract_int_info("-K=\\d{1,10}.rds")
 repl = models_path %>% str_extract_int_info("-repl=\\d{1,10}-")
 
 models_path = models_path[trueK == K]
+models_path
 
 sim_study_df = lapply(1:length(models_path), function(i){
   
   print(models_path[i])  
   fit = readRDS(models_path[i])
   
+  trueK = models_path[i] %>% str_extract_int_info("trueK=\\d{1,10}-") 
+  repl = models_path[i] %>% str_extract_int_info("-repl=\\d{1,10}-")
+  
   post_sample = fit$btblv_fit %>% extract_posterior()
   post_summ = post_sample %>% posterior_summary()
   
   post_summ_df = post_summ$posterior_summary_df
-  true_summ_df = sim_data_list[[trueK[i]]]$true_parameters_df
+  true_summ_df = sim_data_list[[trueK]]$true_parameters_df
   
   post_summ_df = lapply(names(post_summ_df), function(param){
     post_summ_df[[param]]$true_value = true_summ_df[[param]]$mean
-    post_summ_df[[param]]$repl = repl[i]
-    post_summ_df[[param]]$trueK = trueK[i]
+    post_summ_df[[param]]$repl = repl
+    post_summ_df[[param]]$trueK = trueK
     post_summ_df[[param]]$param = param
     post_summ_df[[param]] 
   }) %>% do.call(bind_rows, .)
   
   post_summ_df
   
-}) %>% do.call(rbind, .)
+}) %>% do.call(bind_rows, .)
 
-beta_sim_plot = sim_study_df %>%
+sim_beta_plot = sim_study_df %>%
   filter(param == "beta") %>%
   group_by(trueK, age) %>%
   summarise(avg_est = mean(mean), true_value = mean(true_value)) %>%
@@ -59,11 +64,11 @@ beta_sim_plot = sim_study_df %>%
   labs(x = latex2exp::TeX("Average estimate for $\\beta_{x}$"),
        y= latex2exp::TeX("True value for $\\beta_{x}$"))
 
-beta_sim_plot
-ggsave("plots/sim_beta_plot.pdf", width = 5.5, height = 2)
+sim_beta_plot
+ggsave("analysis/plots/simulation-study/sim_beta_plot.pdf", width = 5.5, height = 2)
 
 #### log kappa ####
-log_kappa_plot = sim_study_df %>%
+sim_log_kappa_plot = sim_study_df %>%
   filter(param == "log_kappa") %>%
   mutate(trueK = paste0("True K = ", trueK)) %>%
   ggplot(aes(x=repl, y=mean, ymin=li, ymax=ui)) + 
@@ -75,14 +80,14 @@ log_kappa_plot = sim_study_df %>%
   guides(color = "none") + 
   scale_x_continuous(breaks = 1:10)
 
-log_kappa_plot
-ggsave("plots/sim_log_kappa.pdf", width = 5.5, height = 2)
+sim_log_kappa_plot
+ggsave("analysis/plots/simulation-study/sim_log_kappa_plot.pdf", width = 5.5, height = 2)
 
-beta_plot / log_kappa_plot
-ggsave("plots/sim_beta_log_kappa.pdf", width = 5.5, height = 4)
+sim_beta_plot / sim_log_kappa_plot
+ggsave("analysis/plots/simulation-study/sim_log_kappa_plot.pdf", width = 5.5, height = 4)
 
 #### alpha ####
-alpha_sim_plot = sim_study_df %>%
+sim_alpha_plot = sim_study_df %>%
   filter(param == "alpha") %>%
   group_by(trueK, age) %>%
   summarise(avg_est = mean(mean), true_value = mean(true_value)) %>%
@@ -94,11 +99,11 @@ alpha_sim_plot = sim_study_df %>%
   labs(x = latex2exp::TeX("Average estimate for $\\alpha_{xk}$"),
        y= latex2exp::TeX("True value for $\\alpha_{xk}$"))
 
-alpha_sim_plot
-ggsave("plots/sim_alpha.pdf", width = 5.5, height = 2.2)
+sim_alpha_plot
+ggsave("analysis/plots/simulation-study/sim_alpha.pdf", width = 5.5, height = 2.2)
 
 #### theta ####
-theta_plot = sim_study_df %>%
+sim_theta_plot = sim_study_df %>%
   filter(param == "theta") %>%
   group_by(trueK, country, year) %>%
   summarise(avg_est = mean(mean), true_value = mean(true_value)) %>%
@@ -110,14 +115,14 @@ theta_plot = sim_study_df %>%
   labs(x = latex2exp::TeX("Average estimate for $\\theta_{ik}^{(t)}$"),
        y= latex2exp::TeX("True value for $\\theta_{ik}^{(t)}$"))
 
-theta_plot
-ggsave("plots/sim_theta.pdf", width = 5.5, height = 2.2)
+sim_theta_plot
+ggsave("analysis/plots/simulation-study/sim_theta.pdf", width = 5.5, height = 2.2)
 
-alpha_plot / theta_plot
-ggsave("plots/sim_alpha_theta.pdf", width = 5.5, height = 4)
+sim_alpha_plot / sim_theta_plot
+ggsave("analysis/plots/simulation-study/sim_alpha_theta.pdf", width = 5.5, height = 4)
 
 #### sigma ####
-sigma_plot = sim_study_df %>%
+sim_sigma_plot = sim_study_df %>%
   filter(param == "sigma") %>%
   group_by(trueK, country, N) %>%
   summarise(avg_est = mean(mean), true_value = mean(true_value)) %>%
@@ -131,11 +136,10 @@ sigma_plot = sim_study_df %>%
        y= latex2exp::TeX("True value for $\\sigma_{i}$"),
        color = expression(N[i]))
 
-sigma_plot
-
+sim_sigma_plot
 
 #### phi ####
-phi_plot = sim_study_df %>%
+sim_phi_plot = sim_study_df %>%
   filter(param == "phi") %>%
   group_by(trueK, country, N) %>%
   summarise(avg_est = mean(mean), true_value = mean(true_value)) %>%
@@ -150,14 +154,11 @@ phi_plot = sim_study_df %>%
        y= latex2exp::TeX("True value for $\\phi_{i}$ in the logit scale"),
        color = expression(N[i]))
 
-sigma_plot
-ggsave("plots/sim_sigma.pdf", width = 6.5, height = 2.5)
+sim_sigma_plot
+ggsave("analysis/plots/simulation-study/sim_sigma.pdf", width = 6.5, height = 2.5)
 
-phi_plot
-ggsave("plots/sim_phi.pdf", width = 6.5, height = 2.5)
+sim_phi_plot
+ggsave("analysis/plots/simulation-study/sim_phi.pdf", width = 6.5, height = 2.5)
 
-sigma_plot / phi_plot
-ggsave("plots/sim_phi_sigma.pdf", width = 5.5, height = 4)
-
-
-
+sim_sigma_plot / sim_phi_plot
+ggsave("analysis/plots/simulation-study/sim_phi_sigma.pdf", width = 5.5, height = 4)
