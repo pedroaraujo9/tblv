@@ -49,7 +49,6 @@ sim_study_metrics_tidy = sim_study_metrics %>%
          trueK = factor(trueK)) %>%
   as_tibble()
 
-
 sim_study_metrics_tidy$metric
 
 # selected model 
