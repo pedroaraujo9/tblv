@@ -26,6 +26,8 @@ repl = models_path %>% str_extract_int_info("-repl=\\d{1,10}-")
 models_path = models_path[trueK == K]
 models_path
 
+trueK
+
 sim_study_df = lapply(1:length(models_path), function(i){
   
   print(models_path[i])  
@@ -34,7 +36,9 @@ sim_study_df = lapply(1:length(models_path), function(i){
   trueK = models_path[i] %>% str_extract_int_info("trueK=\\d{1,10}-") 
   repl = models_path[i] %>% str_extract_int_info("-repl=\\d{1,10}-")
   
-  post_sample = fit$btblv_fit %>% extract_posterior()
+  post_sample = fit$btblv_fit %>% 
+    extract_posterior(alpha_reference = sim_data_list[[trueK]]$true_parameters$alpha)
+  
   post_summ = post_sample %>% posterior_summary()
   
   post_summ_df = post_summ$posterior_summary_df
@@ -78,7 +82,7 @@ sim_log_kappa_plot = sim_study_df %>%
   facet_wrap(. ~ trueK, scales = "free") + 
   labs(x="Replicate", y=latex2exp::TeX("$\\log(\\kappa)$ posterior mean")) +
   guides(color = "none") + 
-  scale_x_continuous(breaks = 1:10)
+  scale_x_continuous(breaks = 1:30)
 
 sim_log_kappa_plot
 ggsave("analysis/plots/simulation-study/sim_log_kappa_plot.pdf", width = 5.5, height = 2)
