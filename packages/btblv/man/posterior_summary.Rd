@@ -4,7 +4,7 @@
 \alias{posterior_summary}
 \title{Compute posterior summary for the \code{btblv_posterior} object}
 \usage{
-posterior_summary(btblv_posterior, cred_mass = 0.95)
+posterior_summary(btblv_posterior, cred_mass = 0.95, pars = NULL)
 }
 \arguments{
 \item{btblv_posterior}{object of the class \code{btblv_posterior}

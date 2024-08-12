@@ -10,17 +10,24 @@
 #'
 #' @examples
 #' #
-posterior_summary = function(btblv_posterior, cred_mass = 0.95) {
-  posterior_mean = list(
-    alpha = .compute_posterior_mean(btblv_posterior$post_sample_array$rot_alpha),
-    beta = .compute_posterior_mean(btblv_posterior$post_sample_array$beta),
-    log_kappa = .compute_posterior_mean(btblv_posterior$post_sample_array$log_kappa),
-    kappa = .compute_posterior_mean(btblv_posterior$post_sample_array$log_kappa %>% exp()),
-    theta = .compute_posterior_mean(btblv_posterior$post_sample_array$rot_theta),
-    E = .compute_posterior_mean(btblv_posterior$post_sample_array$rot_E),
-    phi = .compute_posterior_mean(btblv_posterior$post_sample_array$phi),
-    sigma = .compute_posterior_mean(btblv_posterior$post_sample_array$sigma)
-  )
+posterior_summary = function(btblv_posterior, cred_mass = 0.95, pars = NULL) {
+
+  # param names
+  if(is.null(pars)) {
+    params = names(btblv_posterior$post_sample_array)
+    params = params[!(params %in% c("theta", "alpha", "E", "lp__"))]
+  }
+
+  # computes posterior mean
+  posterior_mean = list()
+
+  for(param in params) {
+    posterior_mean[[param]] = .compute_posterior_mean(
+      btblv_posterior$post_sample_array[[param]]
+    )
+  }
+
+  names(posterior_mean) = names(posterior_mean) %>% stringr::str_remove("rot\\_")
 
   # original columns names
   item_col_name = btblv_posterior$btblv_data$columns[1]
@@ -57,73 +64,86 @@ posterior_summary = function(btblv_posterior, cred_mass = 0.95) {
   colnames(group_id)[2] = group_col_name
 
   # compute posterior summaries
-  alpha = btblv_posterior$post_sample_array$rot_alpha %>%
-    .get_summary_df(cred_mass = cred_mass) %>%
+  posterior_summary_df = list()
+
+  for(param in params) {
+    posterior_summary_df[[param]] = .get_summary_df(
+      btblv_posterior$post_sample_array[[param]],
+      cred_mass = cred_mass
+    )
+  }
+
+  # adding user label for the parameters
+  posterior_summary_df$beta = posterior_summary_df$beta %>%
     dplyr::right_join(item_id, by = c("id" = "item_num")) %>%
     dplyr::select(-id)
 
-  beta = btblv_posterior$post_sample_array$beta %>%
-    .get_summary_df(cred_mass = cred_mass) %>%
-    dplyr::right_join(item_id, by = c("id" = "item_num")) %>%
-    dplyr::select(-id)
+  if(!is.null(posterior_summary_df$kappa)) {
 
+    if(nrow(posterior_summary_df$kappa) == 1) {
 
-  log_kappa_summary_df = btblv_posterior$post_sample_array$log_kappa %>%
-    .get_summary_df()
+      posterior_summary_df$kappa = posterior_summary_df$kappa
 
-  if(nrow(log_kappa_summary_df) == 1) {
-    log_kappa = log_kappa_summary_df
+    }else{
 
-  }else{
-    log_kappa = log_kappa_summary_df %>%
+      posterior_summary_df$kappa = posterior_summary_df$kappa %>%
+        dplyr::right_join(item_id, by = c("id" = "item_num")) %>%
+        dplyr::select(-id)
+    }
+  }
+
+  if(!is.null(posterior_summary_df$log_kappa)) {
+
+    if(nrow(posterior_summary_df$log_kappa) == 1) {
+
+      posterior_summary_df$log_kappa = posterior_summary_df$log_kappa
+
+    }else{
+
+      posterior_summary_df$log_kappa = posterior_summary_df$log_kappa %>%
+        dplyr::right_join(item_id, by = c("id" = "item_num")) %>%
+        dplyr::select(-id)
+    }
+  }
+
+  if(!is.null(posterior_summary_df$rot_theta)) {
+    posterior_summary_df[["theta"]] = posterior_summary_df$rot_theta %>%
+      dplyr::right_join(ind_id, by = c("id" = "ind_num")) %>%
+      dplyr::select(-id)
+
+    posterior_summary_df[["rot_theta"]] = NULL
+  }
+
+  if(!is.null(posterior_summary_df$rot_E)) {
+    posterior_summary_df[["E"]] = posterior_summary_df$rot_E %>%
+      dplyr::right_join(ind_id, by = c("id" = "ind_num")) %>%
+      dplyr::select(-id)
+
+    posterior_summary_df[["rot_E"]] = NULL
+
+  }
+
+  if(!is.null(posterior_summary_df$rot_alpha)) {
+
+    posterior_summary_df[["alpha"]] = posterior_summary_df$rot_alpha %>%
       dplyr::right_join(item_id, by = c("id" = "item_num")) %>%
+      dplyr::select(-id)
+
+    posterior_summary_df[["rot_alpha"]] = NULL
+
+  }
+
+  if(!is.null(posterior_summary_df$phi)) {
+    posterior_summary_df$phi = posterior_summary_df$phi %>%
+      dplyr::right_join(group_id, by = c("id" = "group_num")) %>%
       dplyr::select(-id)
   }
 
-  kappa_summary_df = btblv_posterior$post_sample_array$log_kappa %>%
-    base::exp() %>%
-    .get_summary_df()
-
-  if(nrow(kappa_summary_df) == 1) {
-    kappa = kappa_summary_df
-
-  }else{
-    kappa = kappa_summary_df %>%
-      dplyr::right_join(item_id, by = c("id" = "item_num")) %>%
+  if(!is.null(posterior_summary_df$sigma)) {
+    posterior_summary_df$sigma = posterior_summary_df$sigma %>%
+      dplyr::right_join(group_id, by = c("id" = "group_num")) %>%
       dplyr::select(-id)
   }
-
-
-  theta = btblv_posterior$post_sample_array$rot_theta %>%
-    .get_summary_df(cred_mass = cred_mass) %>%
-    dplyr::right_join(ind_id, by = c("id" = "ind_num")) %>%
-    dplyr::select(-id)
-
-  E = btblv_posterior$post_sample_array$rot_E %>%
-    .get_summary_df(cred_mass = cred_mass) %>%
-    dplyr::right_join(ind_id, by = c("id" = "ind_num")) %>%
-    dplyr::select(-id)
-
-  phi = btblv_posterior$post_sample_array$phi %>%
-    .get_summary_df(cred_mass = cred_mass) %>%
-    dplyr::right_join(group_id, by = c("id" = "group_num")) %>%
-    dplyr::select(-id)
-
-  sigma = btblv_posterior$post_sample_array$sigma %>%
-    .get_summary_df(cred_mass = cred_mass) %>%
-    dplyr::right_join(group_id, by = c("id" = "group_num")) %>%
-    dplyr::select(-id)
-
-  posterior_summary_df = list(
-    alpha = alpha,
-    beta = beta,
-    log_kappa = log_kappa,
-    kappa = kappa,
-    theta = theta,
-    E = E,
-    phi = phi,
-    sigma = sigma
-  )
 
   btblv_posterior_summary = list(
     posterior_mean = posterior_mean,

@@ -51,8 +51,9 @@ extract_posterior = function(btblv_fit,
     )
   }
 
-  # rotate permuted params
+  # rotate permuted parameters
   post_sample = stan_fit %>% rstan::extract()
+  post_sample$kappa = post_sample$log_kappa %>% exp()
 
   if("matrix" %in% class(alpha_reference)) {
     reference_matrix = alpha_reference
@@ -80,6 +81,7 @@ extract_posterior = function(btblv_fit,
 
   # rotate non permuted params
   post_sample_chains = stan_fit %>% rstan::extract(permuted = FALSE)
+
   chains = dim(post_sample_chains)[2]
 
   params = stan_fit@model_pars

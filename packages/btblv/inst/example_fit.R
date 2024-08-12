@@ -83,3 +83,33 @@ example_fit = list(
 
 usethis::use_data(example_fit, overwrite = T, )
 
+#### bfa fit for the data use to test functions ####
+log_mx = data$data_list_stan$x %>% log()
+
+bfa_fit = IMIFA::mcmc_IMIFA(
+  log_mx, method = "FA", range.Q=1:10,
+  mixFA = mixfaControl(
+    n.iters = 50000,
+    burnin = 20000,
+    thinning = 20,
+    centering = TRUE,
+    scaling = "none"
+  )
+)
+
+imifa_result = list()
+
+imifa_result = list(
+  imifa_result_K1 = IMIFA::get_IMIFA_results(imifa_fit, Q = 1),
+  imifa_result_K2 = IMIFA::get_IMIFA_results(imifa_fit, Q = 2),
+  btblv_data = example_fit$single_K1$btblv_data
+)
+
+saveRDS(imifa_result, "inst/imifa_result.rds")
+
+
+
+
+
+
+

@@ -18,35 +18,52 @@ posterior_predict = function(btblv_posterior, seed, cred_mass = 0.95) {
 
   set.seed(seed)
 
-  iters = btblv_posterior$post_sample_array$E %>% dim() %>% .[1]
+  iters = btblv_posterior$post_sample_array$beta %>% dim() %>% .[1]
   N = btblv_posterior$btblv_data$data_list_stan$N
 
   pred_post_sample = matrix(nrow = iters, ncol = N)
 
-  theta = btblv_posterior$post_sample_array$theta
-  alpha = btblv_posterior$post_sample_array$alpha
+  theta = btblv_posterior$post_sample_array$rot_theta
+  alpha = btblv_posterior$post_sample_array$rot_alpha
   beta = btblv_posterior$post_sample_array$beta
-  kappa = btblv_posterior$post_sample_array$log_kappa %>% exp()
+  kappa = btblv_posterior$post_sample_array$kappa
   precision = btblv_posterior$precision
 
   item = btblv_posterior$btblv_data$data$item_num
   ind = btblv_posterior$btblv_data$data$ind_num
 
-  dim(theta)
+  if(class(btblv_posterior) == "btblv_posterior") {
 
-  for(i in 1:iters) {
-    mu_iter = rowSums(cbind(alpha[i, item, ] * theta[i, ind, ])) + beta[i, item]
-    mu_iter = inv_logit(mu_iter)
+    for(i in 1:iters) {
 
-    if(precision == "single") {
-      kappa_iter = kappa[i]
-    }else{
-      kappa_iter = kappa[i, item]
+      mu_iter = rowSums(cbind(alpha[i, item, ] * theta[i, ind, ])) + beta[i, item]
+      mu_iter = inv_logit(mu_iter)
+
+      if(precision == "single") {
+        kappa_iter = kappa[i]
+      }else{
+        kappa_iter = kappa[i, item]
+      }
+
+      pred_post_sample[i, ] = rbeta(N, mu_iter*kappa_iter, (1-mu_iter)*kappa_iter)
     }
 
-    pred_post_sample[i, ] = rbeta(N, mu_iter*kappa_iter, (1-mu_iter)*kappa_iter)
-  }
+  }else if(class(btblv_posterior) == "fa_imifa_posterior") {
 
+    for(i in 1:iters) {
+
+      mu_iter = rowSums(cbind(alpha[i, item, ] * theta[i, ind, ])) + beta[i, item]
+
+      if(precision == "single") {
+        kappa_iter = kappa[i]
+      }else{
+        kappa_iter = kappa[i, item]
+      }
+
+      pred_post_sample[i, ] = rnorm(N, mu_iter, sqrt(kappa_iter)) %>% exp()
+
+    }
+  }
 
   pred_post_summary_df = tibble::tibble(
     ind_num = btblv_posterior$btblv_data$data$ind_num,
