@@ -13,22 +13,22 @@ data = model_fit$btblv_data
 
 set.seed(1)
 post_sample = model_fit %>% btblv::extract_posterior(
-  alpha_reference = "mode", apply_varimax = T
+  alpha_reference = "pca", apply_varimax = FALSE
 )
 
 post_summ = post_sample %>% btblv::posterior_summary() 
 
 alpha = post_summ$posterior_mean$alpha
 
-alpha[, 1] %>% plot()
+alpha[, 3] %>% plot()
 alpha[, 2] %>% plot()
 alpha[, 3] %>% plot()
 alpha[, 4] %>% plot()
 
-alpha[, 2] = -alpha[, 2]
+alpha[, 3] = -alpha[, 3]
 
 post_sample = model_fit %>% btblv::extract_posterior(
-  alpha_reference = alpha, apply_varimax = FALSE
+  alpha_reference = alpha, apply_varimax = TRUE
 )
 
 post_summ = post_sample %>% btblv::posterior_summary() 
@@ -62,7 +62,7 @@ ap = post_summ$posterior_summary_df$alpha %>%
   theme(text = element_text(size = 15))
 
 ap
-ggsave("plots/alpha_app_est.pdf", width = 6, height = 3.5)
+ggsave("analysis/plots/alpha_est.pdf", width = 6, height = 3.5)
 
 #### alpha and beta ####
 theta_max = lapply(1:K, function(k){
@@ -106,15 +106,15 @@ example_log_mortality = mu_df %>%
   labs(x="Age group x", y=latex2exp::TeX("logit$(\\mu_{xit})$"), color="") 
 
 example_log_mortality
-ggsave("plots/mortality_example.pdf", width = 6, height = 3.5)
+ggsave("analysis/plots/mortality_example.pdf", width = 6, height = 3.5)
 
 
 ap + (example_log_mortality + theme(text = element_text(size = 15)))
-ggsave("plots/alpha.pdf", width = 12, height = 3.5)
+ggsave("analysis/plots/alpha_mortality_example.pdf", width = 12, height = 3.5)
 
 
 ap / (example_log_mortality + theme(text = element_text(size = 15)))
-ggsave("plots/alpha_col.pdf", width = 6, height = 6)
+ggsave("analysis/plots/alpha_logit_curve.pdf", width = 6, height = 6)
 
 post_summ$posterior_summary_df$log_kappa
 
@@ -140,7 +140,7 @@ post_summ$posterior_summary_df$theta %>%
   labs(x="Year", y=latex2exp::TeX("$\\theta_{ik}^{(t)}$"), color="Country:") +
   theme(legend.position = "top", text = element_text(size = 9))
 
-ggsave("plots/theta_time_k_STA.pdf", width = 5, height = 3.5)
+ggsave("analysis/plots/theta_time.pdf", width = 5, height = 3.5)
 
 ##### AR(1) params ####
 ar_params = bind_rows(
@@ -172,7 +172,7 @@ ar_params %>%
   coord_flip() +
   labs(y="Posterior", x="Country")
 
-ggsave("plots/sigma_phi_hdi.pdf", width = 8, height = 5.5)
+ggsave("analysis/plots/sigma_phi_hdi.pdf", width = 8, height = 5.5)
 
 data.frame(
   phi = post_summ$posterior_summary_df$phi$mean, 
@@ -191,6 +191,6 @@ data.frame(
   scale_y_continuous(labels = paste0("logit(", btblv::inv_logit(c(1, 2, 3, 4)) %>% round(2), ")")) +
   scale_x_continuous(labels = paste0("log(", exp(c(-2.25, -2.00, -1.75, -1.5, -1.25)) %>% round(2), ")"))
 
-ggsave("plots/sigma_phi_est.pdf", width = 5.5, height = 3)
+ggsave("analysis/plots/sigma_phi_est.pdf", width = 5.5, height = 3)
 
 ar_params %>% filter(country == "Ireland")

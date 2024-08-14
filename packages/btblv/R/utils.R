@@ -10,7 +10,9 @@
 #' @examples
 #' # .simulate_uniform_matrix(ncol=2, nrow=100, lower=-1, upper=1)
 .simulate_uniform_matrix = function(ncol, nrow, lower, upper) {
-  m = matrix(runif(nrow*ncol, min = lower, max = upper), nrow = nrow, ncol = ncol)
+  m = runif(nrow*ncol, min = lower, max = upper) %>%
+    matrix(nrow = nrow, ncol = ncol)
+
   return(m)
 }
 
@@ -477,7 +479,7 @@ inv_logit = function(x) {
 #' # .compute_MAPE(c(1, 2, 3), c(1, 2, 5))
 #'
 .compute_MAPE = function(true, pred) {
-  100*mean(abs(true-pred)/abs(true))
+  100*mean(abs((true-pred)/true))
 }
 
 #' Extract the lower triangular value of a matrix

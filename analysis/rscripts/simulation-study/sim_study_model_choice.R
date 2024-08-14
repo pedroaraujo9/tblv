@@ -39,7 +39,8 @@ sim_study_metrics = purrr:::map_df(models, ~{
   )
 }) %>% tibble::as_tibble()
 
-saveRDS(sim_study_metrics, "analysis/results/sim_study_metrics.rds")
+sim_study_metrics %>% saveRDS("analysis/results/sim_study_metrics.rds")
+sim_study_metrics = readRDS("analysis/results/sim_study_metrics.rds")
 
 sim_study_metrics_tidy = sim_study_metrics %>%
   gather(metric, value, -repl, -trueK, -K) %>%
@@ -49,12 +50,17 @@ sim_study_metrics_tidy = sim_study_metrics %>%
          trueK = factor(trueK)) %>%
   as_tibble()
 
-sim_study_metrics_tidy$metric
-
 # selected model 
 sim_study_metrics_tidy %>%
   group_by(repl, metric, trueK) %>%
   summarise(selected_K = K[which.min(value)]) %>%
+  group_by(metric, trueK, selected_K) %>%
+  summarise(n = n())
+
+sim_study_metrics_tidy %>%
+  filter(metric == "log_kappa") %>%
+  group_by(repl, metric, trueK) %>%
+  summarise(selected_K = K[which.max(value)]) %>%
   group_by(metric, trueK, selected_K) %>%
   summarise(n = n())
 
@@ -78,5 +84,5 @@ sim_study_metrics_tidy %>%
   facet_wrap(trueK ~ metric, scales = "free", labeller = label_parsed) + 
   labs(x="K", y="Value")
 
-ggsave("plots/sim_study_model_choice.pdf", width = 7.5, height = 4)
+ggsave("analysis/plots/simulation-study/sim_study_model_choice.pdf", width = 7.5, height = 4)
 

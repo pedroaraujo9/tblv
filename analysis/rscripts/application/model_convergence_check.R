@@ -67,9 +67,23 @@ models_path
 
 # single precision
 conv_summary = convergence_summary(models_path, precision_type = "single")
+conv_summary %>% saveRDS("analysis/models/convergence_summary.rds")
+conv_summary = readRDS("analysis/models/convergence_summary.rds")
 
 conv_summary$rhat_summary
 conv_summary$ess_summary
+
+conv_summary$rhat_summary %>%
+  as.data.frame() %>%
+  select(alpha, beta, log_kappa, phi, sigma, theta) %>%
+  round(2) %>%
+  xtable::xtable()
+
+conv_summary$ess_summary %>%
+  as.data.frame() %>%
+  select(alpha, beta, log_kappa, phi, sigma, theta) %>%
+  round(2) %>%
+  xtable::xtable()
 
 # specific precision
 conv_summary = convergence_summary(models_path, precision_type = "specific")

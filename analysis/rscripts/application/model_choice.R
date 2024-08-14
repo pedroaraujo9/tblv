@@ -19,15 +19,20 @@ compute_metrics = function(models_path, precision_type) {
     
     model_fit = readRDS(model_path)
     post_sample = model_fit %>% 
-      extract_posterior(alpha_reference = "posterior mode")
+      extract_posterior(alpha_reference = "mode")
+    
+    summ = post_sample %>% posterior_summary()
+    pred = post_sample %>% posterior_predict(seed = 1)
     
     model_waic = post_sample %>% compute_WAIC() %>% .$waic
-    model_bic = post_sample %>% compute_BIC(N = 100000, seed = 1, cores = 5)
+    model_bic = post_sample %>% compute_BIC(N = 200000, seed = 1, cores = 5)
     
     data.frame(
       K = k,
       WAIC = model_waic,
-      BIC = model_bic
+      BIC = model_bic,
+      log_kappa = summ$posterior_mean$log_kappa %>% mean(),
+      RMSE = sqrt(mean((pred$pred_post_summary_df$mean - pred$pred_post_summary_df$y)^2))
     )
   }) %>%
     do.call(rbind, .)
@@ -71,10 +76,42 @@ saveRDS(metrics_single_prec, specific_prec_path)
 metrics_single_prec
 metrics_single_prec$BIC %>% plot()
 metrics_single_prec$WAIC %>% plot()
+metrics_single_prec$log_kappa %>% plot()
+metrics_single_prec$RMSE %>% plot()
 
+
+metrics_single_prec_tidy = metrics_single_prec %>%
+  gather(metric, value, -K) %>%
+  mutate(metric = factor(metric, levels = c("log_kappa", "BIC", "WAIC", "RMSE")))
+
+levels(metrics_single_prec_tidy$metric) = c(
+  "log_kappa" = TeX("$\\log(\\kappa)$"),
+  "BIC" = latex2exp::TeX("BIC$_{m}$"),
+  "WAIC" = latex2exp::TeX("WAIC$_{c}$"),
+  "RMSE" = "RMSE"
+)
+
+metrics_single_prec_tidy %>%
+  ggplot(aes(x=K, y=value)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(. ~ metric, scales = "free", labeller = label_parsed) +
+  labs(x="K", y="Metric value") + 
+  scale_x_continuous(breaks = 1:10)
+
+ggsave("analysis/plots/model_choice.pdf", height = 3, width = 5)
+
+metrics_single_prec %>%
+  mutate(RMSE = 100*RMSE) %>%
+  round(3) %>%
+  select(-K) %>%
+  xtable::xtable()
+
+#### specific precision ####
 metrics_specific_prec
 metrics_specific_prec$BIC %>% plot()
 metrics_specific_prec$WAIC %>% plot()
 
 metrics_single_prec$BIC %>% which.min()
 metrics_specific_prec$BIC %>% which.min()
+

@@ -56,6 +56,9 @@ sim_study_df = lapply(1:length(models_path), function(i){
   
 }) %>% do.call(bind_rows, .)
 
+sim_study_df %>% saveRDS("analysis/results/sim_study_df.rds")
+sim_study_df = readRDS("analysis/results/sim_study_df.rds")
+
 sim_beta_plot = sim_study_df %>%
   filter(param == "beta") %>%
   group_by(trueK, age) %>%
@@ -82,13 +85,14 @@ sim_log_kappa_plot = sim_study_df %>%
   facet_wrap(. ~ trueK, scales = "free") + 
   labs(x="Replicate", y=latex2exp::TeX("$\\log(\\kappa)$ posterior mean")) +
   guides(color = "none") + 
-  scale_x_continuous(breaks = 1:30)
+  scale_x_continuous(breaks = 1:30, limits = c(1, 30)) + 
+  theme(axis.text.x = element_text(size = 4))
 
 sim_log_kappa_plot
-ggsave("analysis/plots/simulation-study/sim_log_kappa_plot.pdf", width = 5.5, height = 2)
+ggsave("analysis/plots/simulation-study/sim_log_kappa.pdf", width = 6, height = 2)
 
 sim_beta_plot / sim_log_kappa_plot
-ggsave("analysis/plots/simulation-study/sim_log_kappa_plot.pdf", width = 5.5, height = 4)
+ggsave("analysis/plots/simulation-study/sim_beta_log_kappa.pdf", width = 6, height = 4)
 
 #### alpha ####
 sim_alpha_plot = sim_study_df %>%
@@ -131,13 +135,13 @@ sim_sigma_plot = sim_study_df %>%
   group_by(trueK, country, N) %>%
   summarise(avg_est = mean(mean), true_value = mean(true_value)) %>%
   mutate(trueK = paste0("True K = ", trueK)) %>%
-  ggplot(aes(x=avg_est, y=true_value, color=factor(N))) + 
+  ggplot(aes(x=log(avg_est), y=log(true_value), color=factor(N))) + 
   geom_point() + 
   viridis::scale_color_viridis(discrete = T) + 
   facet_wrap(. ~ trueK, scales="free") + 
   geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
-  labs(x = latex2exp::TeX("Average estimate for $\\sigma_{i}$"),
-       y= latex2exp::TeX("True value for $\\sigma_{i}$"),
+  labs(x = latex2exp::TeX("Average estimate for $\\sigma_{i}$ (on the log scale)"),
+       y= latex2exp::TeX("True value for $\\sigma_{i}$ (on the log scale)"),
        color = expression(N[i]))
 
 sim_sigma_plot
@@ -154,8 +158,8 @@ sim_phi_plot = sim_study_df %>%
   facet_wrap(. ~ trueK, scales="free") + 
   #guides(color = "none") + 
   geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
-  labs(x = latex2exp::TeX("Average estimate for $\\phi_{i}$ in the logit scale"),
-       y= latex2exp::TeX("True value for $\\phi_{i}$ in the logit scale"),
+  labs(x = latex2exp::TeX("Average estimate for $\\phi_{i}$ (on the logit scale)"),
+       y= latex2exp::TeX("True value for $\\phi_{i}$ (on the logit scale)"),
        color = expression(N[i]))
 
 sim_sigma_plot
