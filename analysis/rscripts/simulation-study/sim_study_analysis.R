@@ -72,7 +72,67 @@ sim_beta_plot = sim_study_df %>%
        y= latex2exp::TeX("True value for $\\beta_{x}$"))
 
 sim_beta_plot
+
+
+sim_beta_plot = sim_study_df %>%
+  filter(param == "beta") %>%
+  group_by(trueK, age) %>%
+  mutate(trueK = paste0("True K = ", trueK)) %>%
+  ggplot(aes(x=mean, y=true_value)) + 
+  geom_point() + 
+  facet_grid(. ~ trueK) + 
+  geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
+  labs(x = latex2exp::TeX("Estimates for $\\beta_{x}$"),
+       y= latex2exp::TeX("True value for $\\beta_{x}$"))
+
+sim_beta_plot
+
 ggsave("analysis/plots/simulation-study/sim_beta_plot.pdf", width = 5.5, height = 2)
+
+sim_study_df %>%
+  filter(param == "beta") %>%
+  mutate(trueK = paste0("True K = ", trueK)) %>%
+  select(age, mean, repl, li, ui, trueK) %>%
+  mutate(type="Estimates") %>%
+  bind_rows(
+    sim_study_df %>%
+      filter(param == "beta") %>%
+      mutate(trueK = paste0("True K = ", trueK)) %>%
+      select(age, true_value, repl, trueK) %>%
+      mutate(type="True values") %>%
+      rename(mean = true_value) %>%
+      mutate(repl = -1) %>% 
+      distinct()
+  ) %>%
+  ggplot(aes(x=age, y=mean, group=repl, color=type)) + 
+  geom_ribbon(aes(x=age, ymin=li, ymax=ui, fill=type, group=repl), alpha=0.02, inherit.aes = F) + 
+  geom_point(size=0.7) + 
+  facet_wrap(. ~ trueK, scales = "free") + 
+  labs(x="Age group", y="Posterior mean \nwith 95% HPD interval", color="", fill="") + 
+  theme(legend.position = "top")
+
+ggsave("analysis/plots/simulation-study/sim_beta_hdi.pdf", width = 5, height = 2.5)
+
+sim_study_df %>%
+  filter(param == "beta") %>%
+  mutate(trueK = paste0("True K = ", trueK)) %>%
+  select(age, mean, repl, li, ui, trueK) %>%
+  mutate(type="Estimates") %>%
+  bind_rows(
+    sim_study_df %>%
+      filter(param == "beta") %>%
+      mutate(trueK = paste0("True K = ", trueK)) %>%
+      select(age, true_value, repl, trueK) %>%
+      mutate(type="True values") %>%
+      rename(mean = true_value) %>%
+      mutate(repl = -1) %>% 
+      distinct()
+  ) %>%
+  ggplot(aes(x=age, y=mean, group=repl, color=type)) + 
+  geom_jitter(size=0.7) + 
+  facet_wrap(. ~ trueK, scales = "free") + 
+  labs(x="Age group", y="Posterior mean \nwith 95% HPD interval", color="", fill="") + 
+  theme(legend.position = "top")
 
 #### log kappa ####
 sim_log_kappa_plot = sim_study_df %>%
@@ -94,6 +154,7 @@ ggsave("analysis/plots/simulation-study/sim_log_kappa.pdf", width = 6, height = 
 sim_beta_plot / sim_log_kappa_plot
 ggsave("analysis/plots/simulation-study/sim_beta_log_kappa.pdf", width = 6, height = 4)
 
+
 #### alpha ####
 sim_alpha_plot = sim_study_df %>%
   filter(param == "alpha") %>%
@@ -108,7 +169,121 @@ sim_alpha_plot = sim_study_df %>%
        y= latex2exp::TeX("True value for $\\alpha_{xk}$"))
 
 sim_alpha_plot
+
+sim_alpha_plot = sim_study_df %>%
+  filter(param == "alpha") %>%
+  group_by(trueK, age) %>%
+  mutate(trueK = paste0("True K = ", trueK)) %>%
+  ggplot(aes(x=mean, y=true_value)) + 
+  geom_point() + 
+  facet_wrap(. ~ trueK, scales="free") + 
+  geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
+  labs(x = latex2exp::TeX("Estimates for $\\alpha_{xk}$"),
+       y= latex2exp::TeX("True value for $\\alpha_{xk}$"))
+
+sim_alpha_plot
 ggsave("analysis/plots/simulation-study/sim_alpha.pdf", width = 5.5, height = 2.2)
+
+# ribbon 
+sim_study_df %>%
+  filter(param == "alpha", trueK == 2) %>%
+  mutate(K = paste0("k = ", K)) %>%
+  select(age, mean, repl, K, li, ui) %>%
+  mutate(type="Estimates") %>%
+  bind_rows(
+    sim_study_df %>%
+      filter(param == "alpha", trueK == 2) %>%
+      mutate(K = paste0("k = ", K)) %>%
+      select(age, true_value, repl, K) %>%
+      mutate(type="True values") %>%
+      rename(mean = true_value) %>%
+      mutate(repl = -1) %>% 
+      distinct()
+  ) %>%
+  ggplot(aes(x=age, y=mean, group=repl, color=type)) + 
+  geom_ribbon(aes(x=age, ymin=li, ymax=ui, fill=type, group=repl), alpha=0.02, inherit.aes = F) + 
+  geom_point(size=0.7) + 
+  facet_wrap(. ~ K, scales = "free") + 
+  labs(x="Age group", y="Posterior mean with\n 95% HPD interval", color="", fill="") + 
+  theme(legend.position = "top")
+
+sim_study_df %>%
+  filter(param == "alpha", trueK == 4) %>%
+  mutate(K = paste0("k = ", K)) %>%
+  select(age, mean, repl, K, li, ui) %>%
+  mutate(type="Estimates") %>%
+  bind_rows(
+    sim_study_df %>%
+      filter(param == "alpha", trueK == 4) %>%
+      mutate(K = paste0("k = ", K)) %>%
+      select(age, true_value, repl, K) %>%
+      mutate(type="True values") %>%
+      rename(mean = true_value) %>%
+      mutate(repl = -1) %>% 
+      distinct()
+  ) %>%
+  ggplot(aes(x=age, y=mean, group=repl, color=type)) + 
+  geom_ribbon(aes(x=age, ymin=li, ymax=ui, fill=type, group=repl), alpha=0.02, inherit.aes = F) + 
+  geom_point(size=0.7) + 
+  facet_wrap(. ~ K, scales = "free") + 
+  labs(x="Age group", y="Posterior mean with\n 95% HPD interval", color="", fill="") + 
+  theme(legend.position = "none")
+
+
+# linerange
+jitter_pos = position_jitter(width = 0.2, height = 0) 
+
+sim_study_df %>%
+  filter(param == "alpha", trueK == 2) %>%
+  mutate(K = paste0("Dimension ", K)) %>%
+  select(age, mean, repl, K, li, ui) %>%
+  mutate(type="Estimates") %>%
+  bind_rows(
+    sim_study_df %>%
+      filter(param == "alpha", trueK == 2) %>%
+      mutate(K = paste0("Dimension ", K)) %>%
+      select(age, true_value, repl, K) %>%
+      mutate(type="True values") %>%
+      mutate(repl = -1) %>% 
+      distinct()
+  ) %>%
+  ggplot(aes(x=factor(age), y=mean, color=type)) + 
+  geom_jitter(position = jitter_pos, alpha=0.8, size=0.5) + 
+  geom_linerange(aes(ymin=li, ymax=ui), position = jitter_pos, alpha=0.2) + 
+  geom_point(aes(x=factor(age), y=true_value, color=type), inherit.aes = F, size=0.5) + 
+  facet_wrap(. ~ K, scales = "free") + 
+  labs(x="Age group", y="Posterior mean with\n 95% HPD interval", color="", fill="") + 
+  theme(legend.position = "top") + 
+  scale_x_discrete(breaks = seq(0, 110, 20)) + 
+  theme(text=element_text(size = 14))
+  
+ggsave("analysis/plots/simulation-study/sim_alpha_K2_hdi.pdf", width = 7, height = 3)
+
+sim_study_df %>%
+  filter(param == "alpha", trueK == 4) %>%
+  mutate(K = paste0("Dimension ", K)) %>%
+  select(age, mean, repl, K, li, ui) %>%
+  mutate(type="Estimates") %>%
+  bind_rows(
+    sim_study_df %>%
+      filter(param == "alpha", trueK == 4) %>%
+      mutate(K = paste0("Dimension ", K)) %>%
+      select(age, true_value, repl, K) %>%
+      mutate(type="True values") %>%
+      mutate(repl = -1) %>% 
+      distinct()
+  ) %>%
+  ggplot(aes(x=factor(age), y=mean, color=type)) + 
+  geom_jitter(position = jitter_pos, alpha=0.8, size=0.5) + 
+  geom_linerange(aes(ymin=li, ymax=ui), position = jitter_pos, alpha=0.2) + 
+  geom_point(aes(x=factor(age), y=true_value, color=type), inherit.aes = F, size=0.5) + 
+  facet_wrap(. ~ K, scales = "free") + 
+  labs(x="Age group", y="Posterior mean with\n 95% HPD interval", color="", fill="") + 
+  theme(legend.position = "top") + 
+  scale_x_discrete(breaks = seq(0, 110, 20)) + 
+  theme(legend.position = "none", text=element_text(size = 14))
+
+ggsave("analysis/plots/simulation-study/sim_alpha_K4_hdi.pdf", width = 7, height = 4)
 
 #### theta ####
 sim_theta_plot = sim_study_df %>%
@@ -124,12 +299,29 @@ sim_theta_plot = sim_study_df %>%
        y= latex2exp::TeX("True value for $\\theta_{ik}^{(t)}$"))
 
 sim_theta_plot
+
+
+sim_theta_plot = sim_study_df %>%
+  filter(param == "theta") %>%
+  group_by(trueK, country, year) %>%
+  mutate(trueK = paste0("True K = ", trueK)) %>%
+  ggplot(aes(x=mean, y=true_value)) + 
+  geom_point() + 
+  facet_wrap(. ~ trueK, scales="free") + 
+  geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
+  labs(x = latex2exp::TeX("Estimates for $\\theta_{ik}^{(t)}$"),
+       y= latex2exp::TeX("True value for $\\theta_{ik}^{(t)}$"))
+
+sim_theta_plot
+
 ggsave("analysis/plots/simulation-study/sim_theta.pdf", width = 5.5, height = 2.2)
 
 sim_alpha_plot / sim_theta_plot
 ggsave("analysis/plots/simulation-study/sim_alpha_theta.pdf", width = 5.5, height = 4)
 
 #### sigma ####
+
+# point  
 sim_sigma_plot = sim_study_df %>%
   filter(param == "sigma") %>%
   group_by(trueK, country, N) %>%
@@ -144,7 +336,67 @@ sim_sigma_plot = sim_study_df %>%
        y= latex2exp::TeX("True value for $\\sigma_{i}$ (on the log scale)"),
        color = expression(N[i]))
 
+sim_sigma_plot = sim_study_df %>%
+  filter(param == "sigma") %>%
+  group_by(trueK, country, N) %>%
+  mutate(trueK = paste0("True K = ", trueK)) %>%
+  ggplot(aes(x=log(mean), y=log(true_value), color=factor(N))) + 
+  geom_point() + 
+  viridis::scale_color_viridis(discrete = T) + 
+  facet_wrap(. ~ trueK, scales="free") + 
+  geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
+  labs(x = latex2exp::TeX("Estimates for $\\sigma_{i}$ (on the log scale)"),
+       y= latex2exp::TeX("True value for $\\sigma_{i}$ (on the log scale)"),
+       color = expression(N[i]))
+
 sim_sigma_plot
+ggsave("analysis/plots/simulation-study/sim_sigma.pdf", width = 6.5, height = 2.5)
+
+
+
+# linerange
+
+jitter_pos = position_jitter(width = 0.2, height = 0) 
+
+sim_study_df %>%
+  filter(param == "sigma") %>%
+  mutate(trueK = paste0("true K = ", trueK)) %>%
+  select(country, mean, repl, trueK, li, ui) %>%
+  mutate(type="Estimates") %>%
+  bind_rows(
+    sim_study_df %>%
+      filter(param == "sigma") %>%
+      mutate(trueK = paste0("true K = ", trueK)) %>%
+      select(country, true_value, repl, trueK) %>%
+      mutate(type="True values") %>%
+      mutate(repl = -1) %>% 
+      distinct()
+  ) %>%
+  ggplot(aes(x=country, y=mean, color=type)) + 
+  geom_jitter(position = jitter_pos, alpha=0.8, size=1.5) + 
+  geom_linerange(aes(ymin=li, ymax=ui), position = jitter_pos, alpha=0.1) + 
+  geom_point(aes(x=country, y=true_value, color=type), inherit.aes = F, size=2) + 
+  labs(x="Country", y="Posterior mean with 95% HPD interval", color="", fill="") + 
+  theme(legend.position = "top") + 
+  facet_wrap(. ~ trueK, scales = "free") + 
+  theme(text=element_text(size = 14)) + 
+  coord_flip()
+
+sim_study_df %>%
+  filter(param == "sigma") %>%
+  mutate(trueK = paste0("true K = ", trueK)) %>%
+  select(country, mean, repl, trueK, li, ui, true_value, N) %>%
+  ggplot(aes(x=log(mean), y=log(true_value), color=factor(N))) + 
+  geom_point() + 
+  viridis::scale_color_viridis(discrete = T) + 
+  facet_wrap(. ~ trueK, scales="free") + 
+  geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
+  labs(x = latex2exp::TeX("Average estimate for $\\sigma_{i}$ (on the log scale)"),
+       y= latex2exp::TeX("True value for $\\sigma_{i}$ (on the log scale)"),
+       color = expression(N[i]))
+  
+  
+
 
 #### phi ####
 sim_phi_plot = sim_study_df %>%
@@ -162,8 +414,19 @@ sim_phi_plot = sim_study_df %>%
        y= latex2exp::TeX("True value for $\\phi_{i}$ (on the logit scale)"),
        color = expression(N[i]))
 
-sim_sigma_plot
-ggsave("analysis/plots/simulation-study/sim_sigma.pdf", width = 6.5, height = 2.5)
+sim_phi_plot = sim_study_df %>%
+  filter(param == "phi") %>%
+  group_by(trueK, country, N) %>%
+  mutate(trueK = paste0("True K = ", trueK)) %>%
+  ggplot(aes(x=logit(mean), y=logit(true_value), color=factor(N))) + 
+  geom_point() + 
+  viridis::scale_color_viridis(discrete = T) + 
+  facet_wrap(. ~ trueK, scales="free") + 
+  #guides(color = "none") + 
+  geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
+  labs(x = latex2exp::TeX("Estimates for $\\phi_{i}$ (on the logit scale)"),
+       y= latex2exp::TeX("True value for $\\phi_{i}$ (on the logit scale)"),
+       color = expression(N[i]))
 
 sim_phi_plot
 ggsave("analysis/plots/simulation-study/sim_phi.pdf", width = 6.5, height = 2.5)

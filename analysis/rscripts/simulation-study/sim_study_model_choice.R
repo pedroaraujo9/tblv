@@ -82,7 +82,17 @@ sim_study_metrics_tidy %>%
   geom_line(alpha=0.4) + 
   geom_point(alpha=0.4) + 
   facet_wrap(trueK ~ metric, scales = "free", labeller = label_parsed) + 
-  labs(x="K", y="Value")
-
+  labs(x="K", y="Metric value")
 ggsave("analysis/plots/simulation-study/sim_study_model_choice.pdf", width = 7.5, height = 4)
+
+sim_study_metrics_tidy %>%
+  ggplot(aes(x=factor(K), y=value)) + 
+  geom_boxplot() + 
+  geom_jitter(alpha=0.3, size = 1) + 
+  facet_wrap(trueK ~ metric, scales = "free", labeller = label_parsed) + 
+  labs(x="K", y="Metric value") + 
+  theme(text = element_text(size = 15))
+
+ggsave("analysis/plots/simulation-study/sim_study_model_choice.pdf", width = 9, height = 5)
+
 
