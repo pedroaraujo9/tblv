@@ -59,6 +59,7 @@ sim_study_df = lapply(1:length(models_path), function(i){
 sim_study_df %>% saveRDS("analysis/results/sim_study_df.rds")
 sim_study_df = readRDS("analysis/results/sim_study_df.rds")
 
+#### beta ####
 sim_beta_plot = sim_study_df %>%
   filter(param == "beta") %>%
   group_by(trueK, age) %>%
@@ -113,26 +114,34 @@ sim_study_df %>%
 
 ggsave("analysis/plots/simulation-study/sim_beta_hdi.pdf", width = 5, height = 2.5)
 
+jitter_pos = position_jitter(width = 0.2, height = 0) 
+
 sim_study_df %>%
   filter(param == "beta") %>%
   mutate(trueK = paste0("True K = ", trueK)) %>%
-  select(age, mean, repl, li, ui, trueK) %>%
+  select(age, mean, repl, trueK, li, ui) %>%
   mutate(type="Estimates") %>%
   bind_rows(
     sim_study_df %>%
       filter(param == "beta") %>%
       mutate(trueK = paste0("True K = ", trueK)) %>%
-      select(age, true_value, repl, trueK) %>%
+      select(age, true_value, repl, trueK, li, ui) %>%
       mutate(type="True values") %>%
-      rename(mean = true_value) %>%
       mutate(repl = -1) %>% 
       distinct()
   ) %>%
-  ggplot(aes(x=age, y=mean, group=repl, color=type)) + 
-  geom_jitter(size=0.7) + 
+  ggplot(aes(x=factor(age), y=mean, color=type)) + 
+  geom_jitter(position = jitter_pos, alpha=0.8, size=0.7) + 
+  geom_linerange(aes(ymin=li, ymax=ui), position = jitter_pos, alpha=0.2) + 
+  geom_point(aes(x=factor(age), y=true_value, color=type), inherit.aes = F, size=0.7) + 
   facet_wrap(. ~ trueK, scales = "free") + 
-  labs(x="Age group", y="Posterior mean \nwith 95% HPD interval", color="", fill="") + 
-  theme(legend.position = "top")
+  labs(x="Age group", y="Posterior mean with\n 95% HPD interval", color="", fill="") + 
+  theme(legend.position = "top") + 
+  scale_x_discrete(breaks = seq(0, 110, 20)) + 
+  theme(text=element_text(size = 15))
+
+ggsave("analysis/plots/simulation-study/sim_beta_hdi.pdf", width = 9, height = 4)
+
 
 #### log kappa ####
 sim_log_kappa_plot = sim_study_df %>%
@@ -234,56 +243,31 @@ sim_study_df %>%
 jitter_pos = position_jitter(width = 0.2, height = 0) 
 
 sim_study_df %>%
-  filter(param == "alpha", trueK == 2) %>%
-  mutate(K = paste0("Dimension ", K)) %>%
-  select(age, mean, repl, K, li, ui) %>%
+  filter(param == "alpha") %>%
+  mutate(K = paste0("Dimension ", K), trueK = paste0("True K = ", trueK)) %>%
+  select(age, mean, repl, trueK, K, li, ui) %>%
   mutate(type="Estimates") %>%
   bind_rows(
     sim_study_df %>%
-      filter(param == "alpha", trueK == 2) %>%
-      mutate(K = paste0("Dimension ", K)) %>%
-      select(age, true_value, repl, K) %>%
+      filter(param == "alpha") %>%
+      mutate(K = paste0("Dimension ", K), trueK = paste0("True K = ", trueK)) %>%
+      select(age, true_value, repl, K, trueK) %>%
       mutate(type="True values") %>%
       mutate(repl = -1) %>% 
       distinct()
   ) %>%
   ggplot(aes(x=factor(age), y=mean, color=type)) + 
-  geom_jitter(position = jitter_pos, alpha=0.8, size=0.5) + 
+  geom_jitter(position = jitter_pos, alpha=0.8, size=0.6) + 
   geom_linerange(aes(ymin=li, ymax=ui), position = jitter_pos, alpha=0.2) + 
-  geom_point(aes(x=factor(age), y=true_value, color=type), inherit.aes = F, size=0.5) + 
-  facet_wrap(. ~ K, scales = "free") + 
+  geom_point(aes(x=factor(age), y=true_value, color=type), inherit.aes = F, size=1) + 
+  facet_wrap(trueK ~ K, scales = "free") + 
   labs(x="Age group", y="Posterior mean with\n 95% HPD interval", color="", fill="") + 
   theme(legend.position = "top") + 
   scale_x_discrete(breaks = seq(0, 110, 20)) + 
-  theme(text=element_text(size = 14))
+  theme(text=element_text(size = 18))
   
-ggsave("analysis/plots/simulation-study/sim_alpha_K2_hdi.pdf", width = 7, height = 3)
+ggsave("analysis/plots/simulation-study/sim_alpha_hdi.pdf", width = 11, height = 6)
 
-sim_study_df %>%
-  filter(param == "alpha", trueK == 4) %>%
-  mutate(K = paste0("Dimension ", K)) %>%
-  select(age, mean, repl, K, li, ui) %>%
-  mutate(type="Estimates") %>%
-  bind_rows(
-    sim_study_df %>%
-      filter(param == "alpha", trueK == 4) %>%
-      mutate(K = paste0("Dimension ", K)) %>%
-      select(age, true_value, repl, K) %>%
-      mutate(type="True values") %>%
-      mutate(repl = -1) %>% 
-      distinct()
-  ) %>%
-  ggplot(aes(x=factor(age), y=mean, color=type)) + 
-  geom_jitter(position = jitter_pos, alpha=0.8, size=0.5) + 
-  geom_linerange(aes(ymin=li, ymax=ui), position = jitter_pos, alpha=0.2) + 
-  geom_point(aes(x=factor(age), y=true_value, color=type), inherit.aes = F, size=0.5) + 
-  facet_wrap(. ~ K, scales = "free") + 
-  labs(x="Age group", y="Posterior mean with\n 95% HPD interval", color="", fill="") + 
-  theme(legend.position = "top") + 
-  scale_x_discrete(breaks = seq(0, 110, 20)) + 
-  theme(legend.position = "none", text=element_text(size = 14))
-
-ggsave("analysis/plots/simulation-study/sim_alpha_K4_hdi.pdf", width = 7, height = 4)
 
 #### theta ####
 sim_theta_plot = sim_study_df %>%
@@ -319,6 +303,41 @@ ggsave("analysis/plots/simulation-study/sim_theta.pdf", width = 5.5, height = 2.
 sim_alpha_plot / sim_theta_plot
 ggsave("analysis/plots/simulation-study/sim_alpha_theta.pdf", width = 5.5, height = 4)
 
+# linerange 
+
+theta = sim_study_df %>%
+  filter(param %in% c("theta")) %>%
+  mutate(trueK = paste0("true K = ", trueK), K = paste0("Dimension ", K)) %>%
+  select(param, country, year, mean, repl, trueK, K, li, ui, N) %>%
+  mutate(type=paste0("Estimates")) %>%
+  bind_rows(
+    sim_study_df %>%
+      filter(param %in% c("theta")) %>%
+      mutate(trueK = paste0("true K = ", trueK), K = paste0("Dimension ", K)) %>%
+      select(param, country, year, true_value, K, repl, trueK) %>%
+      mutate(type="True values") %>%
+      mutate(repl = -1) %>% 
+      distinct()
+  ) %>%
+  mutate(trueK = factor(trueK),
+         country_time = paste0(country, "-", year)) 
+
+theta %>%
+  ggplot(aes(x=country_time, y=mean, color=type)) + 
+  geom_jitter(position = jitter_pos, alpha=0.7, size=1.5) + 
+  geom_linerange(aes(ymin=li, ymax=ui), position = jitter_pos, alpha=0.07) + 
+  labs(x="Country", y="Posterior mean with 95% HPD interval", color="", fill="") + 
+  facet_wrap(K ~ trueK, scales = "free") + 
+  theme(text=element_text(size = 14)) + 
+  coord_flip() + 
+  scale_color_manual(values = c("red", viridis(8))) + 
+  geom_point(aes(x=country_label, y=true_value, color=type), inherit.aes = F, size=2, color="red") +
+  scale_x_discrete(breaks = c(1, 10, 20, 30, 40) %>% as.character()) + 
+  theme(text = element_text(size = 22))
+
+ggsave("analysis/plots/simulation-study/phi_sigma_sim_hdi.pdf", width = 12, height = 10)
+
+
 #### sigma ####
 
 # point  
@@ -351,36 +370,6 @@ sim_sigma_plot = sim_study_df %>%
 
 sim_sigma_plot
 ggsave("analysis/plots/simulation-study/sim_sigma.pdf", width = 6.5, height = 2.5)
-
-
-
-# linerange
-
-jitter_pos = position_jitter(width = 0.2, height = 0) 
-
-sim_study_df %>%
-  filter(param == "sigma") %>%
-  mutate(trueK = paste0("true K = ", trueK)) %>%
-  select(country, mean, repl, trueK, li, ui) %>%
-  mutate(type="Estimates") %>%
-  bind_rows(
-    sim_study_df %>%
-      filter(param == "sigma") %>%
-      mutate(trueK = paste0("true K = ", trueK)) %>%
-      select(country, true_value, repl, trueK) %>%
-      mutate(type="True values") %>%
-      mutate(repl = -1) %>% 
-      distinct()
-  ) %>%
-  ggplot(aes(x=country, y=mean, color=type)) + 
-  geom_jitter(position = jitter_pos, alpha=0.8, size=1.5) + 
-  geom_linerange(aes(ymin=li, ymax=ui), position = jitter_pos, alpha=0.1) + 
-  geom_point(aes(x=country, y=true_value, color=type), inherit.aes = F, size=2) + 
-  labs(x="Country", y="Posterior mean with 95% HPD interval", color="", fill="") + 
-  theme(legend.position = "top") + 
-  facet_wrap(. ~ trueK, scales = "free") + 
-  theme(text=element_text(size = 14)) + 
-  coord_flip()
 
 sim_study_df %>%
   filter(param == "sigma") %>%
@@ -433,3 +422,67 @@ ggsave("analysis/plots/simulation-study/sim_phi.pdf", width = 6.5, height = 2.5)
 
 sim_sigma_plot / sim_phi_plot
 ggsave("analysis/plots/simulation-study/sim_phi_sigma.pdf", width = 5.5, height = 4)
+
+
+### lineragen for phi and sigma
+
+jitter_pos = position_jitter(width = 0.2, height = 0) 
+
+cts = sim_study_df$country %>% unique()
+cts_labels = (1:length(cts)) %>% as.character()
+names(cts_labels) = cts
+cts_labels
+
+phi_sigma = sim_study_df %>%
+  filter(param %in% c("sigma", "phi")) %>%
+  mutate(trueK = paste0("true K = ", trueK)) %>%
+  select(param, country, mean, repl, trueK, li, ui, N) %>%
+  mutate(type=paste0("Estimates, N = ", N)) %>%
+  bind_rows(
+    sim_study_df %>%
+      filter(param %in% c("sigma", "phi")) %>%
+      mutate(trueK = paste0("true K = ", trueK)) %>%
+      select(param, country, true_value, repl, trueK) %>%
+      mutate(type="True values") %>%
+      mutate(repl = -1) %>% 
+      distinct()
+  ) %>%
+  mutate(param = factor(param, levels = c("phi", "sigma")),
+         trueK = factor(trueK)) %>%
+  left_join(
+    sim_study_df %>%
+      select(country, N) %>%
+      distinct() %>%
+      drop_na() %>%
+      arrange(N) %>%
+      mutate(country_label = 1:nrow(.)) %>%
+      mutate(country_label = factor(country_label, levels = country_label)), 
+    by = "country"
+  )
+
+phi_sigma$type = phi_sigma$type %>% factor(levels = c("True values", paste0("Estimates, N = ", 1:14)))
+
+levels(phi_sigma$param) = c(
+  "phi" = latex2exp::TeX("$\\phi_{i}$"),
+  "sigma" = latex2exp::TeX("$\\sigma_{i}$")
+)
+
+levels(phi_sigma$trueK) = c(
+  "True K = 2" = latex2exp::TeX("True $K = 2$"),
+  "True K = 4" = latex2exp::TeX("True $K = 4$")
+)
+
+phi_sigma %>%
+  ggplot(aes(x=country_label, y=mean, color=type)) + 
+  geom_jitter(position = jitter_pos, alpha=0.7, size=1.5) + 
+  geom_linerange(aes(ymin=li, ymax=ui), position = jitter_pos, alpha=0.07) + 
+  labs(x="Country", y="Posterior mean with 95% HPD interval", color="", fill="") + 
+  facet_wrap(param ~ trueK, scales = "free", labeller = label_parsed) + 
+  theme(text=element_text(size = 14)) + 
+  coord_flip() + 
+  scale_color_manual(values = c("red", viridis(8))) + 
+  geom_point(aes(x=country_label, y=true_value, color=type), inherit.aes = F, size=2, color="red") +
+  scale_x_discrete(breaks = c(1, 10, 20, 30, 40) %>% as.character()) + 
+  theme(text = element_text(size = 22))
+
+ggsave("analysis/plots/simulation-study/phi_sigma_sim_hdi.pdf", width = 12, height = 10)

@@ -44,6 +44,8 @@ bp = post_summ$posterior_summary_df$beta %>%
 
 bp
 
+post_summ$posterior_summary_df$log_kappa %>% round(3)
+
 #### alpha ####
 ap = post_summ$posterior_summary_df$alpha %>%
   ggplot(aes(x=age, y=mean, color=factor(K), fill=factor(K))) + 
