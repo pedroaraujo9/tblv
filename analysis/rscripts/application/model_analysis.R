@@ -13,14 +13,14 @@ data = model_fit$btblv_data
 
 set.seed(1)
 post_sample = model_fit %>% btblv::extract_posterior(
-  alpha_reference = "pca", apply_varimax = FALSE
+  alpha_reference = "pca", apply_varimax = TRUE
 )
 
 post_summ = post_sample %>% btblv::posterior_summary() 
 
 alpha = post_summ$posterior_mean$alpha
 
-alpha[, 3] %>% plot()
+alpha[, 1] %>% plot()
 alpha[, 2] %>% plot()
 alpha[, 3] %>% plot()
 alpha[, 4] %>% plot()
@@ -28,7 +28,7 @@ alpha[, 4] %>% plot()
 alpha[, 3] = -alpha[, 3]
 
 post_sample = model_fit %>% btblv::extract_posterior(
-  alpha_reference = alpha, apply_varimax = TRUE
+  alpha_reference = alpha, apply_varimax = FALSE
 )
 
 post_summ = post_sample %>% btblv::posterior_summary() 
