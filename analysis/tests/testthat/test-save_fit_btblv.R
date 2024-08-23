@@ -23,7 +23,7 @@ thin = 1
 chains = 2
 data_path = "../../data/data_model.rds"
 local_save_path = temp_test_dir
-mc_samples = 200
+mc_samples = 100
 
 # tests
 testthat::test_that("inputs", {
@@ -39,6 +39,34 @@ testthat::test_that("inputs", {
       
       save_fit_btblv(
         K = K, 
+        data_type = "mx",
+        iter = iter, 
+        mc_samples = mc_samples,
+        warmup = warmup, 
+        thin = thin, 
+        chains = chains,
+        seed = 1, 
+        precision = precision, 
+        config_path = config_path, 
+        model_name_pattern = model_name_pattern,
+        save_gdrive = save_gdrive,
+        data_path = data_path,
+        local_save_path = local_save_path, 
+        gdrive_folder_id = gdrive_folder_id,
+        refresh = 0,
+        show_messages = FALSE,
+        verbose = FALSE,
+        open_progress = FALSE
+      ) %>%
+        suppressWarnings()
+      
+    )
+
+    expect_no_error(
+      
+      save_fit_btblv(
+        K = K, 
+        data_type = "qx",
         iter = iter, 
         mc_samples = mc_samples,
         warmup = warmup, 

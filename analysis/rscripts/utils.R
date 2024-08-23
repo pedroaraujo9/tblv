@@ -36,6 +36,8 @@ compute_model_metrics = function(model_fit,
 #' Fit btblv model and save it locally or in a google drive folder
 #'
 #' @param K integer with the latent dimension size.
+#' @param data_type string with the type of data. Default is "mx", but it 
+#' can also be "qx".
 #' @param iter integer with the number of iterations
 #' @param mc_samples monte carlo samples for the marginal likelihood approximation.
 #' @param warmup integer with the warm-up size. See `rstan::sampling`.
@@ -60,6 +62,7 @@ compute_model_metrics = function(model_fit,
 #' @examples
 #' 
 save_fit_btblv = function(K, 
+                          data_type = "mx",
                           iter, 
                           mc_samples,
                           warmup, 
@@ -142,7 +145,7 @@ save_fit_btblv = function(K,
     
     data = btblv::create_btblv_data(
       df = df,
-      resp_col_name = "mx",
+      resp_col_name = data_type,
       item_col_name = "age",
       group_col_name = "country",
       time_col_name = "year"

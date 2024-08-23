@@ -19,6 +19,7 @@ for(i in 1:length(args)) {
 print(args_list)
 
 K = args_list$K %>% as.numeric()
+data_type = args_list$data_type
 iter = args_list$iter %>% as.numeric()
 warmup = args_list$warmup %>% as.numeric() 
 thin = args_list$thin %>% as.numeric()
@@ -38,8 +39,13 @@ if(is.null(gdrive_folder_id)) {
   gdrive_folder_id = config$gdrive$model_folder_id
 }
 
+if(is.null(data_type) | data_type == "") {
+  data_type = "mx"
+}
+
 save_fit_btblv(
   K = K, 
+  data_type = data_type,
   iter = iter, 
   mc_samples = mc_samples,
   warmup = warmup, 

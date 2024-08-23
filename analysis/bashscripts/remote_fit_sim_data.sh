@@ -21,11 +21,11 @@
 
 #!/bin/bash -l
 
-iter=10
-warmup=1
-thin=2
+iter=4000
+warmup=2000
+thin=5
 chains=3
-mc_samples=100
+mc_samples=100000
 precision="single"
 config_path="config.yaml" 
 model_name_pattern=$1
