@@ -22,7 +22,8 @@ download_mortality = function(credentials, age_group_size, cohort_size) {
       mutate(country_code = .x)
   }) %>%
     left_join(countries %>% select(-link), by = c("country_code" = "CNTRY")) %>%
-    rename(year = Year, age = Age, open_interval = OpenInterval) %>%
+    rename(year = Year, age = Age, open_interval = OpenInterval, 
+           country = Country) %>%
     mutate(data_extract = Sys.Date())
   
   return(life_tables)
