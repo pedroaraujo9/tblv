@@ -32,6 +32,53 @@ compute_model_metrics = function(model_fit,
   return(metrics)
 }
 
+.get_model_name = function(model_name_pattern, K, precision) {
+  if(is.null(model_name_pattern)){
+    
+    model_name = paste0(
+      "btblv-precision=", precision, "-",
+      "K=", K, ".rds"
+    )
+    
+  }else if(model_name_pattern == "") {
+    
+    model_name = paste0(
+      "btblv-precision=", precision, "-",
+      "K=", K, ".rds"
+    )
+    
+  }else{
+    
+    model_name = paste0(
+      "btblv-", model_name_pattern, "-precision=", precision, "-",
+      "K=", K, ".rds"
+    )
+  }
+  
+  return(model_name)
+}
+
+.get_models_saved = function(save_gdrive, local_path, gdrive_folder_id) {
+  
+  if(save_gdrive == FALSE) {
+    
+    models_path = paste0(local_path, "/models-saved-list.txt") 
+    
+    if(!file.exists(models_path)) {
+      file.create(models_path)
+    }
+    
+    models_saved = readLines(models_path)
+    
+    ##### Google drive #####
+  }else{
+    models_saved = googledrive::drive_ls(path = googledrive::as_id(gdrive_folder_id))
+    models_saved = models_saved$name
+  }
+  
+  return(models_saved)
+}
+
 
 #' Fit btblv model and save it locally or in a google drive folder
 #'
