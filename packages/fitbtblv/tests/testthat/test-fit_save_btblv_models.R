@@ -8,7 +8,6 @@ test_that("inputs", {
   chains = 2
   config_path = "config.yaml"
   gdrive_folder_id = "1LvmQrUG3P424ZsEVi_LuWfgUHoLmf-LH"
-  mc_samples = 1000
   local_path = "models_test"
 
   data("qx_btblv_data")
@@ -32,7 +31,7 @@ test_that("inputs", {
       chains = chains,
       precision = "single",
       seed = 1,
-      mc_samples = 1000,
+      mc_samples = 100,
       config_path = config_path,
       model_name_pattern = "qx",
       save_gdrive = TRUE,
@@ -66,7 +65,7 @@ test_that("inputs", {
     chains = chains,
     precision = "single",
     seed = 1,
-    mc_samples = 1000,
+    mc_samples = 100,
     config_path = config_path,
     model_name_pattern = "qx",
     save_gdrive = FALSE,

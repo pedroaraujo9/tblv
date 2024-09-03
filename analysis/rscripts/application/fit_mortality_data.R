@@ -39,7 +39,7 @@ if(is.null(gdrive_folder_id)) {
   gdrive_folder_id = config$gdrive$model_folder_id
 }
 
-if(is.null(data_type) | data_type == "") {
+if(is.null(data_type)) {
   data_type = "mx"
 }
 

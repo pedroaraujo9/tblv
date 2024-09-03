@@ -17,25 +17,26 @@
 #SBATCH --mail-user=pedro.menezesdearaujo@ucdconnect.ie
 
 # Specifies the jobname
-#SBATCH --job-name=single-precision
+#SBATCH --job-name=single-qx
 
-iter=10000
-warmup=5000 
-thin=10
+iter=1000
+warmup=500 
+thin=5
 chains=3
 precision="single"
 config_path="config.yaml" 
-model_name_pattern=""
+model_name_pattern="prob"
 save_gdrive="TRUE"
 data_path="analysis/data/data_model.rds"
 local_save_path="analysis/models_test"
 gdrive_folder_id="1LvmQrUG3P424ZsEVi_LuWfgUHoLmf-LH"
+data_type="qx"
 
 module load R
 
 for K in $(seq 1 10)
   do 
-  Rscript analysis/rscripts/fit_mortality_data.R --args K=$K iter=$iter warmup=$warmup thin=$thin chains=$chains precision=$precision config_path=$config_path model_name_pattern=$model_name_pattern save_gdrive=$save_gdrive data_path=$data_path local_save_path=$local_save_path gdrive_folder_id=$gdrive_folder_id &  
+  Rscript analysis/rscripts/application/fit_mortality_data.R --args data_type=$data_type K=$K iter=$iter warmup=$warmup thin=$thin chains=$chains precision=$precision config_path=$config_path model_name_pattern=$model_name_pattern save_gdrive=$save_gdrive data_path=$data_path local_save_path=$local_save_path gdrive_folder_id=$gdrive_folder_id &  
   done
 
 wait;
