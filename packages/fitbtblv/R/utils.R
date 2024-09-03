@@ -161,7 +161,7 @@
 
       for K in $(seq 1 {K_max})
       do
-        Rscript R/{fit_save_r_script} --args K=$K {r_script_args} &
+        Rscript {fit_save_r_script} K=$K --args {r_script_args} &
       done
 
       wait;
