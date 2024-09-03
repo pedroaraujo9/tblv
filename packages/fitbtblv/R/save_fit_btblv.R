@@ -66,12 +66,12 @@ save_fit_btblv = function(btblv_data_path,
   #### create model name ####
   model_name = .get_model_name(model_name_pattern, K, precision)
 
-  cat(paste0("\n----- MODEL NAME -----\n", model_name, "\n"))
+  cat(paste0("\n\n----- MODEL NAME -----\n\n", model_name, "\n"))
 
   #### check if the model was fitted before ####
   models_saved = .get_models_saved(save_gdrive, local_path, gdrive_folder_id)
 
-  cat(paste0("\n----- MODELS SAVED -----\n"))
+  cat(paste0("\n\n----- MODELS SAVED -----\n\n"))
   models_saved %>%
     stringr::str_flatten("\n") %>%
     cat()
@@ -128,7 +128,7 @@ save_fit_btblv = function(btblv_data_path,
     return(TRUE)
 
   }else{
-    cat("\n ----- FIT ALREADY EXISTS. FIT NOT DONE! -----\n")
+    cat("\n\n----- FIT ALREADY EXISTS. FIT NOT DONE! -----\n\n")
     return(FALSE)
   }
 }

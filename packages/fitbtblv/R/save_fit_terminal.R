@@ -44,21 +44,24 @@ run_fit = function(K_max,
                    local_path) {
 
   bash_script = .get_bash_script(
-    cluster_run,
-    K_max,
-    btblv_data_path,
-    iter,
-    warmup,
-    thin,
-    chains,
-    precision,
-    seed,
-    mc_samples,
-    config_path,
-    model_name_pattern,
-    save_gdrive,
-    gdrive_folder_id,
-    local_path
+    cluster_run = cluster_run,
+    job_cores = job_cores, 
+    job_email = job_email, 
+    job_name = job_name,
+    K_max = K_max,
+    btblv_data_path = btblv_data_path,
+    iter = iter,
+    warmup = warmup,
+    thin = thin,
+    chains = chains,
+    precision = precision,
+    seed = seed,
+    mc_samples = mc_samples,
+    config_path = config_path,
+    model_name_pattern = model_name_pattern,
+    save_gdrive = save_gdrive,
+    gdrive_folder_id = gdrive_folder_id,
+    local_path = local_path
   )
 
   if(cluster_run == FALSE) {

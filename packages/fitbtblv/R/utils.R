@@ -84,6 +84,9 @@
 
 
 .get_bash_script = function(cluster_run,
+                            job_cores = NULL, 
+                            job_email = NULL, 
+                            job_name = NULL,
                             K_max,
                             btblv_data_path,
                             iter,
@@ -124,7 +127,7 @@
 
       for K in $(seq 1 {K_max})
         do
-        Rscript R/run_fit_terminal.R K=$K --args {r_script_args};
+          Rscript R/save_fit_script_terminal.R K=$K --args {r_script_args};
         done
       "
     )
@@ -155,11 +158,10 @@
 
       for K in $(seq 1 {K_max})
       do
-        Rscript analysis/rscripts/fit_mortality_data.R --args {r_script_args} &
+        Rscript R/save_fit_script_terminal.R --args K=$K {r_script_args} &
       done
 
       wait;
-
       "
     )
 
