@@ -20,7 +20,9 @@ test_that("inputs", {
 
   if(file.exists("config.yaml")) {
 
-    save_fit_btblv(
+
+
+    fit_save_btblv(
       btblv_data_path = "models_test/qx_btblv_data.rds",
       K = 2,
       iter = iter,
@@ -37,13 +39,12 @@ test_that("inputs", {
       local_path = local_path,
       refresh = 0,
       show_messages = FALSE,
-      verbose = FALSE,
-      open_progress = FALSE
+      verbose = FALSE
     ) %>%
       suppressWarnings() %>%
       expect_no_error()
 
-    save_fit_btblv(
+    fit_save_btblv(
       btblv_data_path = "models_test/qx_btblv_data.rds",
       K = 2,
       iter = iter,
@@ -60,13 +61,12 @@ test_that("inputs", {
       local_path = local_path,
       refresh = 0,
       show_messages = FALSE,
-      verbose = FALSE,
-      open_progress = FALSE
+      verbose = FALSE
     ) %>%
       suppressWarnings() %>%
       expect_false()
 
-    save_fit_btblv(
+    fit_save_btblv(
       btblv_data_path = "models_test/mx_btblv_data.rds",
       K = 2,
       iter = iter,
@@ -83,18 +83,26 @@ test_that("inputs", {
       local_path = local_path,
       refresh = 0,
       show_messages = FALSE,
-      verbose = FALSE,
-      open_progress = FALSE
+      verbose = FALSE
     ) %>%
       suppressWarnings() %>%
       expect_no_error()
+
+    config = yaml::yaml.load_file(config_path)
+
+    googledrive::drive_deauth()
+    googledrive::drive_auth_configure(path = config$gdrive$auth_credentials)
+    googledrive::drive_auth(email = config$gdrive$email)
+
+    saved_ids = googledrive::drive_ls(googledrive::as_id(gdrive_folder_id))
+    googledrive::drive_rm(googledrive::as_id(saved_ids$id))
 
   }else{
     cat("\n")
     cat("config.yaml file not available, skiping GDrive tests.")
   }
 
-  save_fit_btblv(
+  fit_save_btblv(
     btblv_data_path = "models_test/mx_btblv_data.rds",
     K = 2,
     iter = iter,
@@ -111,14 +119,13 @@ test_that("inputs", {
     local_path = local_path,
     refresh = 0,
     show_messages = FALSE,
-    verbose = FALSE,
-    open_progress = FALSE
+    verbose = FALSE
   ) %>%
     suppressWarnings() %>%
     expect_no_error()
 
   # should not re-run
-  save_fit_btblv(
+  fit_save_btblv(
     btblv_data_path = "models_test/mx_btblv_data.rds",
     K = 2,
     iter = iter,
@@ -135,14 +142,11 @@ test_that("inputs", {
     local_path = local_path,
     refresh = 0,
     show_messages = FALSE,
-    verbose = FALSE,
-    open_progress = FALSE
+    verbose = FALSE
   ) %>%
     suppressWarnings() %>%
     expect_false()
 
-  saved_ids = googledrive::drive_ls(googledrive::as_id(gdrive_folder_id))
-  googledrive::drive_rm(googledrive::as_id(saved_ids$id))
 
   unlink("models_test", recursive = TRUE)
 

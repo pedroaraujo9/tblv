@@ -29,7 +29,7 @@ if(length(args) == 0) {
   gdrive_folder_id = args_list$gdrive_folder_id
   local_path = args_list$local_path
 
-  fitbtblv::save_fit_btblv(
+  fitbtblv::fit_save_btblv(
     btblv_data_path,
     K,
     iter,

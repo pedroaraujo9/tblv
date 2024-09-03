@@ -24,29 +24,29 @@
 #'
 #' @examples
 #'  ##
-run_fit = function(K_max,
-                   cluster_run,
-                   job_cores = NULL,
-                   job_email = NULL,
-                   job_name = NULL,
-                   btblv_data_path,
-                   iter,
-                   warmup,
-                   thin,
-                   chains,
-                   precision,
-                   seed,
-                   mc_samples,
-                   config_path,
-                   model_name_pattern,
-                   save_gdrive,
-                   gdrive_folder_id,
-                   local_path) {
+fit_save_btblv_models = function(K_max,
+                                 cluster_run,
+                                 job_cores = NULL,
+                                 job_email = NULL,
+                                 job_name = NULL,
+                                 btblv_data_path,
+                                 iter,
+                                 warmup,
+                                 thin,
+                                 chains,
+                                 precision,
+                                 seed,
+                                 mc_samples,
+                                 config_path,
+                                 model_name_pattern,
+                                 save_gdrive,
+                                 gdrive_folder_id,
+                                 local_path) {
 
   bash_script = .get_bash_script(
     cluster_run = cluster_run,
-    job_cores = job_cores, 
-    job_email = job_email, 
+    job_cores = job_cores,
+    job_email = job_email,
     job_name = job_name,
     K_max = K_max,
     btblv_data_path = btblv_data_path,
@@ -66,16 +66,16 @@ run_fit = function(K_max,
 
   if(cluster_run == FALSE) {
 
-    system(bash_script)
+    out = system(bash_script, intern = TRUE)
 
   }else{
 
     bash_file_path = paste0(local_path, "/run_fit_server_bash_script.sh")
     cat(bash_script, file = bash_file_path)
 
-    system(paste0("sbatch ", bash_file_path))
+    out = system(paste0("sbatch ", bash_file_path), intern = TRUE)
 
   }
 
-  return(TRUE)
+  return(out)
 }

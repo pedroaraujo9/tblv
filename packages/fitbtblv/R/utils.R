@@ -84,8 +84,8 @@
 
 
 .get_bash_script = function(cluster_run,
-                            job_cores = NULL, 
-                            job_email = NULL, 
+                            job_cores = NULL,
+                            job_email = NULL,
                             job_name = NULL,
                             K_max,
                             btblv_data_path,
@@ -101,6 +101,9 @@
                             save_gdrive,
                             gdrive_folder_id,
                             local_path) {
+
+  fit_save_r_script = .libPaths()[1] |>
+    paste0("/fitbtblv/fit_save_btblv_terminal.R")
 
   r_script_args = glue::glue("
     btblv_data_path='{btblv_data_path}'
@@ -127,7 +130,7 @@
 
       for K in $(seq 1 {K_max})
         do
-          Rscript R/save_fit_script_terminal.R K=$K --args {r_script_args};
+          Rscript {fit_save_r_script} K=$K --args {r_script_args};
         done
       "
     )
@@ -158,7 +161,7 @@
 
       for K in $(seq 1 {K_max})
       do
-        Rscript R/save_fit_script_terminal.R --args K=$K {r_script_args} &
+        Rscript R/{fit_save_r_script} --args K=$K {r_script_args} &
       done
 
       wait;

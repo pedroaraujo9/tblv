@@ -33,7 +33,7 @@
 #' @examples
 #' ##
 #'
-save_fit_btblv = function(btblv_data_path,
+fit_save_btblv = function(btblv_data_path,
                           K,
                           iter,
                           warmup,
@@ -89,6 +89,7 @@ save_fit_btblv = function(btblv_data_path,
       chains = chains,
       cores = chains,
       seed = seed,
+      open_progress = FALSE,
       ...
     )
 
