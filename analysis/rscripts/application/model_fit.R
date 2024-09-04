@@ -1,14 +1,16 @@
 library(fitbtblv)
 library(btblv)
 
+config_path = "config.yaml"
+config = yaml::yaml.load_file(config_path)
+
 job_cores = 30
 K_max = 10
 iter = 10000
 warmup = 5000
 thin = 10
 chains = 3
-config_path = "config.yaml"
-gdrive_folder_id = "1LvmQrUG3P424ZsEVi_LuWfgUHoLmf-LH"
+gdrive_folder_id = config$gdrive$model_folder_id
 mc_samples = 100000
 local_path = "analysis/models/test"
 
@@ -22,7 +24,7 @@ for(prec in c("single", "specific")) {
     K_max = K_max,
     cluster_run = TRUE,
     job_cores = job_cores,
-    job_email = "pedro.menezesdearaujo@ucdconnect.ie",
+    job_email = config$gdrive$email,
     job_name = paste0("mx-", prec),
     btblv_data_path = mx_data_path,
     iter = iter,
@@ -50,7 +52,7 @@ for(prec in c("specific", "single")) {
     K_max = K_max,
     cluster_run = TRUE,
     job_cores = job_cores,
-    job_email = "pedro.menezesdearaujo@ucdconnect.ie",
+    job_email = config$gdrive$email,
     job_name = paste0("qx-", prec),
     btblv_data_path = qx_data_path,
     iter = iter,
