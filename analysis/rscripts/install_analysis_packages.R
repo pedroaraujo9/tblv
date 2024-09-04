@@ -1,9 +1,4 @@
-package_names = c("btblv", "tblvArmaUtils")
+devtools::install_github(repo = "pedroaraujo9/tblv", subdir = "fitbtblv")
+devtools::install_github(repo = "pedroaraujo9/btblv", subdir = "btblv")
+devtools::install_github(repo = "pedroaraujo9/btblv", subdir = "tblvArmaUtils")
 
-for(package in package_names) {
-  devtools::install_github(
-    repo = "pedroaraujo9/tblv", 
-    subdir = paste0("packages/", package)
-  )
-  
-}

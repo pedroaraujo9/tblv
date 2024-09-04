@@ -42,6 +42,10 @@ fit_save_btblv_models = function(K_max,
                                  save_gdrive,
                                  gdrive_folder_id,
                                  local_path) {
+  
+  assertthat::assert_that(
+    file.exists(local_path), msg = "folder in `local_path` does not exists."
+  )
 
   bash_script = .get_bash_script(
     cluster_run = cluster_run,
