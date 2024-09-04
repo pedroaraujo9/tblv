@@ -1,13 +1,13 @@
 ## Code to fit time-dependent beta latent variable models (time-BLV)
 
-- In the folder`analysis` there are several scripts used to fit the model.
+- In the folder `analysis` there are several scripts used to fit the model.
 - In the folder `packages` there are the packages developed to fit the model.
 
 ## Instructions 
 
 #### Packages
 
-- To run the analysis, we need to install the packages in the `/packages` folder.
+- To run the analysis, we need to install the packages some packages located in GitHub.
 - Run `Rscript analysis/rscripts/install_analysis_packages.R` in the terminal to install them.
 
 #### config.yaml file 
@@ -28,3 +28,5 @@
     simulation_folder_id: # folder id for the simulation study
     email: # Google drive account e-mail
   ```
+
+
