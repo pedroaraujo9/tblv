@@ -1,15 +1,15 @@
 library(fitbtblv)
 library(btblv)
 
-job_cores = 20
+job_cores = 30
 K_max = 10
-iter = 30
-warmup = 15
-thin = 1
-chains = 2
+iter = 10000
+warmup = 5000
+thin = 10
+chains = 3
 config_path = "config.yaml"
 gdrive_folder_id = "1LvmQrUG3P424ZsEVi_LuWfgUHoLmf-LH"
-mc_samples = 1000
+mc_samples = 100000
 local_path = "analysis/models/test"
 
 qx_data_path = "analysis/data/btblv_data_qx.rds"
@@ -44,7 +44,7 @@ for(prec in c("single", "specific")) {
 }
 
 #### qx fit ####
-for(prec in c("single", "specific")) {
+for(prec in c("specific", "single")) {
 
   out = fit_save_btblv_models(
     K_max = K_max,
