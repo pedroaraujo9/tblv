@@ -1,6 +1,8 @@
 library(btblv)
 library(fitbtblv)
 
+config_path = "config.yaml"
+config = yaml::yaml.load_file(config_path)
 
 trueKs = c(2, 4)
 repls = 1:30
@@ -12,8 +14,7 @@ thin = 5
 chains = 3
 mc_samples = 100000
 
-config_path = "config.yaml"
-gdrive_folder_id = "1rNyxQWOLd9MjxXkR2vWnin-l2Xvuu65j"
+gdrive_folder_id = config$gdrive$simulation_folder_id
 local_path = "analysis/models/simulation-study"
 
 for(trueK in trueKs) {
@@ -27,7 +28,7 @@ for(trueK in trueKs) {
       K_max = K_max,
       cluster_run = TRUE,
       job_cores = job_cores,
-      job_email = "pedro.menezesdearaujo@ucdconnect.ie",
+      job_email = config$gdrive$email,
       job_name = paste0("tK=", trueK, "r=", repl),
       btblv_data_path = data_path,
       iter = iter,
