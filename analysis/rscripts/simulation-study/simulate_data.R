@@ -17,14 +17,8 @@ for(K in c(2, 4)) {
       "-replicate=", i, ".rds"
     )
     
-    sim_data$sim_data_list[[i]] |>
+    sim_data$sim_data_list[[i]] |> 
+      btblv::create_btblv_data("mx", "age", "country", "year") |>
       saveRDS(file_name)
   }  
 }
-
-
-
-
-
-
-

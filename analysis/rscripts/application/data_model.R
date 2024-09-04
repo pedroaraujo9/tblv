@@ -9,3 +9,13 @@ data_model = hmd_data$life_tables_5x5 %>%
 
 saveRDS(data_model, "analysis/data/data_model.rds")
 
+data_model %>%
+  btblv::create_btblv_data("mx", "age", "country", "year") %>%
+  saveRDS("analysis/data/btblv_data_mx.rds")
+
+data_model %>%
+  filter(age < 110) %>%
+  btblv::create_btblv_data("qx", "age", "country", "year") %>%
+  saveRDS("analysis/data/btblv_data_qx.rds")
+
+
