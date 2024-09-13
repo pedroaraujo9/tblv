@@ -6,7 +6,7 @@ library(EnvStats)
 
 
 #### HMD data from package btblv ####
-data("lf")
+fit = readRDS("aalysis/data/data_model.rds")
 
 life_tables = lf %>%
   filter(year %in% seq(1950, 2015, 5)) %>%
@@ -69,7 +69,7 @@ life_tables %>%
   theme(text = element_text(size = 12))
 
 ggsave("analysis/plots/ireland_mortality_curves.pdf", width = 4.5, height = 2.5)
-l
+
 #### correlation matrix ####
 life_tables %>%
   select(country, year, age, mx) %>%
@@ -83,8 +83,8 @@ life_tables %>%
   mutate(age1 = colnames(.)) %>%
   gather(age2, value, -age1) %>%
   mutate(value = as.numeric(value),
-         age1 = factor(age1, levels = mort_min$age %>% unique()),
-         age2 = factor(age2, levels = mort_min$age %>% unique())) %>%
+         age1 = factor(age1, levels = life_tables$age %>% unique()),
+         age2 = factor(age2, levels = life_tables$age %>% unique())) %>%
   mutate(color_label = ifelse(value <= 0.60, T, F)) %>%
   ggplot(aes(x=age1, y=age2, fill=value, label = round(value, 2))) +
   geom_tile(color="white") +
