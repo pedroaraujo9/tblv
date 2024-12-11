@@ -83,6 +83,8 @@ plot(W_ward)
 ggdendro::ggdendrogram(W_ward, segments = T) + 
   theme(text = element_text(size = 20))
 
+ggsave("analysis/plots/W_dgram.pdf", width = 9, height = 6)
+
 Zdf %>%
   mutate(country = factor(country, levels = country_order)) %>%
   ggplot(aes(x=year, y=country, fill=Z)) + 
@@ -91,11 +93,45 @@ Zdf %>%
   theme_minimal() + 
   labs(x="Period", y="Country", fill=expression(Z[it]))
 
-ggsave("analysis/plots/seq_index_plot.pdf")
+ggsave("analysis/plots/seq_index_plot.pdf", width = 7, height = 4)
 
 
+#### entropy ####
+Hdf = lapply(2:10, function(G){
+  
+  nb = X %>%
+    dist() %>%
+    hclust(method = "ward.D")
+  
+  Z = cutree(nb, k = G) %>% factor()
+  
+  h = mx %>%
+    select(country, year) %>%
+    mutate(Z = Z) %>%
+    spread(year, Z) %>%
+    select(-country) %>%
+    as.matrix() %>%
+    seqdef() %>%
+    seqstatd() %>%
+    .$Entropy
+  
+  data.frame(
+    Period = mx$year %>% unique(),
+    H = h, 
+    G = factor(G)
+  )
+  
+}) %>%
+  do.call(rbind, .)
 
+Hdf %>%
+  ggplot(aes(x=Period, y=H, group=G, color=G)) + 
+  geom_point() + 
+  geom_line() + 
+  viridis::scale_color_viridis(discrete = T) + 
+  theme_minimal()
 
+ggsave("analysis/plots/Entropy-2NP.pdf", width = 6, height = 3.5)
 
 
 
