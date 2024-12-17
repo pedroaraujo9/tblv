@@ -2,7 +2,9 @@ library(tidyverse)
 library(TraMineR)
 library(GGally)
 library(NbClust)
-
+library(dbscan)
+library(mclust)
+library(btblv)
 
 #### data ####
 lf = readRDS("analysis/data/life_tables_5x1.rds")
@@ -45,21 +47,56 @@ dec = X %>% cor() %>% eigen()
 lam = dec$values
 cumsum(lam)/sum(lam)
 
-y = X %*% dec$vectors[, 1:4]
+y = scale(X %*% dec$vectors[, 1:4])
+
+data = btblv::create_btblv_data(
+  df = mx_tidy, resp_col_name = "mx", 
+  item_col_name = "age", 
+  group_col_name = "country", 
+  time_col_name = "year"
+)
+
+data
+plot_corrmatrix(data)
+plot_trend(data)
+
+fit = fit_btblv(
+  data, 
+  K = 4, 
+  iter = 2000, 
+  warmup = 1000, 
+  thin = 5, 
+  chains = 3, 
+  cores = 3, 
+  seed = 1
+)
+
+post$post_sample_chains$theta[, , 1,1]
+
+post = fit %>% extract_posterior(apply_varimax = T)
+summ = post %>% posterior_summary()
+y = summ$posterior_mean$theta
+
+plot(summ$posterior_mean$sigma[, 1], summ$posterior_mean$phi[, 1])
 
 ggpairs(as.data.frame(y))
+cor(y)
+
+btblv::plot_latent_effects(summ)
 
 #### finding Z_{it} ####
-nb = NbClust(data = X, distance = "euclidean", method = "ward.D")
+nb = NbClust(data = y, distance = "euclidean", method = "ward.D")
+par(mfrow=c(1, 1))  
 
-par(mfrow=c(1, 1))   
+Z = nb$Best.partition
+Z %>% table() %>% prop.table()
 
 ggpairs(data.frame(y), 
-        aes(color= factor(nb$Best.partition)))
+        aes(color= factor(Z)))
 
 Zdf = mx %>%
   select(country, year) %>%
-  mutate(Z = factor(nb$Best.partition))
+  mutate(Z = factor(Z))
 
 Z_matrix = Zdf %>%
   spread(year, Z) %>%
@@ -133,7 +170,13 @@ Hdf %>%
 
 ggsave("analysis/plots/Entropy-2NP.pdf", width = 6, height = 3.5)
 
+cmdscale(Z_om, k = 3) %>%
+  data.frame(x1 = .[, 1], x2 = .[, 2], x3 = .[, 3], country = rownames(.)) %>%
+  ggplot(aes(x=x1, y=x3, label=country)) + 
+  geom_label() 
 
 
+#### two-way model based
+Mclust
 
 
