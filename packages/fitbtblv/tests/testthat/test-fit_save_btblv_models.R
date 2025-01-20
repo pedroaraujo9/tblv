@@ -36,7 +36,8 @@ test_that("inputs", {
       model_name_pattern = "qx",
       save_gdrive = TRUE,
       gdrive_folder_id = gdrive_folder_id,
-      local_path = "models_test"
+      local_path = "models_test",
+      max_treedepth = 12
     ) %>%
       suppressWarnings() %>%
       expect_no_error()

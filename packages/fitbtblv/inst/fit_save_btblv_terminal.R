@@ -28,6 +28,7 @@ if(length(args) == 0) {
   save_gdrive = args_list$save_gdrive |> as.logical()
   gdrive_folder_id = args_list$gdrive_folder_id
   local_path = args_list$local_path
+  max_treedepth = args_list$max_treedepth |> as.numeric()
 
   fitbtblv::fit_save_btblv(
     btblv_data_path,
@@ -43,6 +44,7 @@ if(length(args) == 0) {
     model_name_pattern,
     save_gdrive,
     gdrive_folder_id,
-    local_path
+    local_path,
+    max_treedepth
   )
 }

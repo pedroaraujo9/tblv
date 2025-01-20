@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_save_btblv_models.R
 \name{fit_save_btblv_models}
 \alias{fit_save_btblv_models}
-\title{Run btblv model for different K locally or in a cluster.}
+\title{Fit and Save Bayesian Models for BTBLV}
 \usage{
 fit_save_btblv_models(
   K_max,
@@ -22,52 +22,87 @@ fit_save_btblv_models(
   model_name_pattern,
   save_gdrive,
   gdrive_folder_id,
-  local_path
+  local_path,
+  max_treedepth = 10
 )
 }
 \arguments{
-\item{K_max}{integer with max K to be fitted.}
+\item{K_max}{Integer. The maximum number of clusters to consider.}
 
-\item{cluster_run}{logical, if \code{TRUE} fits the model in parallel in the terminal.}
+\item{cluster_run}{Logical. If \code{TRUE}, the script is executed on a cluster using \code{sbatch}.}
 
-\item{job_cores}{integer with the number of cores.}
+\item{job_cores}{Integer. Number of cores to allocate for the job. Only applicable for cluster runs.}
 
-\item{job_email}{character with the email for cluster messages.}
+\item{job_email}{Character. Email address for job notifications. Only applicable for cluster runs.}
 
-\item{job_name}{character with the job name.}
+\item{job_name}{Character. Name of the job. Only applicable for cluster runs.}
 
-\item{btblv_data_path}{character with the path to the \code{btblv::btblv_data} object.}
+\item{btblv_data_path}{Character. Path to the BTBLV data file.}
 
-\item{iter}{integer with the number of HMC iterations.}
+\item{iter}{Integer. Number of iterations for model fitting.}
 
-\item{warmup}{integer with the number of warmup iterations.}
+\item{warmup}{Integer. Number of warmup iterations for model fitting.}
 
-\item{thin}{integer with the number of thinning.}
+\item{thin}{Integer. Thinning interval for model fitting.}
 
-\item{chains}{integer with the number of chains.}
+\item{chains}{Integer. Number of chains for model fitting.}
 
-\item{precision}{character with the type of precision. It can be "single" or "specific".}
+\item{precision}{Character. Precision model type, it can be \code{single} or \code{specific}.}
 
-\item{seed}{integer with the random seed.}
+\item{seed}{Integer. Seed for random number generation.}
 
-\item{mc_samples}{integer with the number of Monte Carlo samples for the BIC.}
+\item{mc_samples}{Integer. Number of Monte Carlo samples to generate.}
 
-\item{config_path}{character with the config.yaml file path.}
+\item{config_path}{Character. Path to the configuration file.}
 
-\item{model_name_pattern}{character with the pattern to save the model.}
+\item{model_name_pattern}{Character. Pattern for naming the models.}
 
-\item{save_gdrive}{logical indicating if the model should be saved on Google drive.}
+\item{save_gdrive}{Logical. If \code{TRUE}, results are saved to Google Drive.}
 
-\item{gdrive_folder_id}{character with the Google Drive folder id.}
+\item{gdrive_folder_id}{Character. Folder ID for saving results in Google Drive. Required if \code{save_gdrive} is \code{TRUE}.}
 
-\item{local_path}{character with local folder to save temporary and permanent files.}
+\item{local_path}{Character. Local directory path to save results and scripts.}
+
+\item{max_treedepth}{Integer. Maximum tree depth for Stan's Hamiltonian Monte Carlo sampler. Default is 10.}
 }
 \value{
-\code{TRUE} if the terminal code ran, \code{FALSE} otherwise.
+Character vector. The output from running the bash script.
 }
 \description{
-Run btblv model for different K locally or in a cluster.
+This function prepares and executes a bash script to fit Bayesian models
+for BTBLV data either locally or on a computing cluster. The script is
+generated dynamically based on user-specified parameters.
+}
+\details{
+\itemize{
+\item When \code{cluster_run} is \code{FALSE}, the script is executed locally using the \code{system} command.
+\item When \code{cluster_run} is \code{TRUE}, the script is saved as a bash file and submitted to a cluster via \code{sbatch}.
+\item Ensure the folder specified in \code{local_path} exists before running the function.
+}
 }
 \examples{
- ##
+\dontrun{
+  fit_save_btblv_models(
+    K_max = 5,
+    cluster_run = TRUE,
+    job_cores = 4,
+    job_email = "user@example.com",
+    job_name = "btblv_model",
+    btblv_data_path = "data/btblv_data.csv",
+    iter = 2000,
+    warmup = 1000,
+    thin = 1,
+    chains = 4,
+    precision = 0.01,
+    seed = 1234,
+    mc_samples = 100,
+    config_path = "config.yaml",
+    model_name_pattern = "model_K",
+    save_gdrive = TRUE,
+    gdrive_folder_id = "1A2B3C4D5E6F7G8H9I",
+    local_path = "output",
+    max_treedepth = 12
+  )
+}
+
 }

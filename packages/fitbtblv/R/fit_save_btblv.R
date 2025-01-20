@@ -1,38 +1,59 @@
-#' Fit btblv model and save it locally or in a Google drive folder
+#' Fit and Save a BTBLV Model
 #'
-#' @param btblv_data_path string with path to the `btblv::btblv_data` object.
-#' @param K integer with the latent dimension size.
-#' @param iter integer with the number of iterations
-#' @param warmup integer with the warm-up size. See `rstan::sampling`.
-#' @param thin integer with the thinning size. See `rstan::sampling`.
-#' @param chains integer with the number of chains. See `rstan::sampling`.
-#' @param seed integer with the random seed.
-#' @param mc_samples integer with the Monte Carlo samples for the marginal likelihood approximation.
-#' @param precision string with the type of precision. It is "single" if all
-#' items have the same precision or "specific" if each item has its own precision
-#' parameter. Default is "single".
-#' @param config_path string with the path to the config.yaml with credentials for google drive.
-#' Default is `NULL`.
-#' @param model_name_pattern string value with characters to be added to the model name.
-#' It will be used as the name of the final file to be saved.
-#' @param save_gdrive logical value. If `TRUE` saves the model on Google drive.
-#' If `FALSE` saves the model locally.
-#' @param gdrive_folder_id string with the Google drive folder id.
-#' @param local_path string with the path of the folder used to store local data.
-#' It also needed for the Google drive saving.
-#' @param ... additional `rstan::sampling` parameters.
+#' This function fits a Bayesian Tree-Based Latent Variable (BTBLV) model, calculates metrics,
+#' and saves the results either locally or to Google Drive. It handles authentication and ensures
+#' the model is not re-fitted if already saved.
 #'
-#' @return `TRUE` if the model was saved, `FALSE` otherwise.
+#' @param btblv_data_path Character. Path to the RDS file containing the BTBLV data.
+#' @param K Integer. Number of clusters or latent variables to fit in the model.
+#' @param iter Integer. Number of iterations for the sampler.
+#' @param warmup Integer. Number of warmup iterations for the sampler.
+#' @param thin Integer. Thinning interval for the sampler.
+#' @param chains Integer. Number of chains for the sampler.
+#' @param precision Character. Precision parameter for the model.
+#' @param seed Integer. Seed for random number generation.
+#' @param mc_samples Integer. Number of Monte Carlo samples for posterior predictive metrics.
+#' @param config_path Character. Path to the configuration file (YAML format) for authentication and other settings.
+#' @param model_name_pattern Character. Pattern for generating the model name.
+#' @param save_gdrive Logical. If `TRUE`, saves the model to Google Drive.
+#' @param gdrive_folder_id Character. Google Drive folder ID to save the model. Required if `save_gdrive` is `TRUE`.
+#' @param local_path Character. Local directory path to save models and temporary files.
+#' @param max_treedepth Integer. Maximum tree depth for Stan's Hamiltonian Monte Carlo sampler. Default is 10.
+#' @param ... Additional arguments passed to the `btblv::fit_btblv` function.
 #'
-#' @export
+#' @return Logical. `TRUE` if the model was fitted and saved successfully, `FALSE` if the model was already saved.
 #'
-#' @import googledrive
-#' @import btblv
-#' @importFrom stringr str_flatten
+#' @details
+#' - Before fitting, the function checks if a model with the same name already exists locally or on Google Drive.
+#' - If `save_gdrive` is `TRUE`, Google Drive authentication is performed using credentials specified in the YAML configuration file.
+#' - The model fitting process includes posterior predictive metric calculations using the specified number of Monte Carlo samples.
 #'
 #' @examples
-#' ##
+#' \dontrun{
+#'   fit_save_btblv(
+#'     btblv_data_path = "data/btblv_data.rds",
+#'     K = 3,
+#'     iter = 2000,
+#'     warmup = 1000,
+#'     thin = 1,
+#'     chains = 4,
+#'     precision = 0.01,
+#'     seed = 42,
+#'     mc_samples = 100,
+#'     config_path = "config.yaml",
+#'     model_name_pattern = "model_K",
+#'     save_gdrive = TRUE,
+#'     gdrive_folder_id = "1A2B3C4D5E6F7G8H9I",
+#'     local_path = "output",
+#'     max_treedepth = 12
+#'   )
+#' }
 #'
+#' @importFrom assertthat assert_that
+#' @importFrom yaml yaml.load_file
+#' @importFrom googledrive drive_deauth drive_auth_configure drive_auth drive_upload as_id
+#' @importFrom stringr str_flatten
+#' @export
 fit_save_btblv = function(btblv_data_path,
                           K,
                           iter,
@@ -47,6 +68,7 @@ fit_save_btblv = function(btblv_data_path,
                           save_gdrive,
                           gdrive_folder_id,
                           local_path,
+                          max_treedepth = 10,
                           ...) {
 
   #### Google drive authentication ####
@@ -90,6 +112,7 @@ fit_save_btblv = function(btblv_data_path,
       cores = chains,
       seed = seed,
       open_progress = FALSE,
+      control = list(max_treedepth = max_treedepth),
       ...
     )
 
