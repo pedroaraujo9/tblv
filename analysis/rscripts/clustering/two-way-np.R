@@ -93,23 +93,6 @@ conv$E$rhat %>% summary()
 conv$alpha
 conv$theta$rhat %>% summary()
 
-
-post$post_sample_chains$beta[,,1] %>% plot()
-abline(a=0, b=1)
-
-y = summ$posterior_mean$theta
-
-plot(summ$posterior_mean$sigma[, 1], summ$posterior_mean$phi[, 1])
-
-plot_latent_effects(summ)
-
-ggpairs(as.data.frame(y))
-cor(y)
-
-y %>% apply(MARGIN = 2, FUN = sd)
-
-btblv::plot_latent_effects(summ)
-
 summ$posterior_summary_df$alpha %>%
   ggplot(aes(x=age, y=mean, color=factor(K), fill=factor(K))) + 
   geom_ribbon(aes(x=age, ymin=li, ymax=ui, fill=factor(K)), alpha=0.4, 
@@ -124,9 +107,35 @@ summ$posterior_summary_df$alpha %>%
   )) + 
   scale_fill_manual(values = c("chocolate1", "cornflowerblue", 
                                            "darkolivegreen4","deeppink4"))
+     
+alpha = summ$posterior_mean$alpha                                      
+alpha[, 2:3] = -alpha[, 2:3]
 
+post = fit %>% extract_posterior(alpha_reference = alpha, apply_varimax = F)
+summ = post %>% posterior_summary()
+
+y = summ$posterior_mean$theta
+
+colnames(y) = c("Elderly", "Adult", "Young", "Old")
+
+plot(summ$posterior_mean$sigma[, 1], summ$posterior_mean$phi[, 1])
+
+plot_latent_effects(summ)
+
+ggpairs(as.data.frame(y))
+cor(y)
+
+y %>% apply(MARGIN = 2, FUN = sd)
+
+btblv::plot_latent_effects(summ)
+
+
+saveRDS(summ, "analysis/results/summ_btblv-fit-K=4-clustering_1x1.rds")
 #### finding Z_{it} ####
 apply_clust = function(data, G, method) {
+  
+  set.seed(1)
+  
   if(method == "Ward") {
     
     cl_ward = stats::hclust(
@@ -181,7 +190,8 @@ calc_quality = function(data, Gmax, method) {
       part = class, 
       crit = c("Silhouette", "Calinski_Harabasz", "Point_biserial")
     ) %>% 
-      as.data.frame()
+      as.data.frame() %>%
+      rename(ASW = silhouette, CH = calinski_harabasz, PBC = point_biserial)
     
   }) %>%
     mutate(G = 2:10, method = method)
@@ -201,6 +211,8 @@ quality = map_df(c("Ward", "K-means", "PAM", "GMM"), ~{
   calc_quality(data = y, Gmax = 10, method = .x)
 })
 
+saveRDS(quality, "analysis/results/Z_quality_metrics.rds")
+
 quality %>%
   gather(metric, value, -G, -method) %>%
   ggplot(aes(x=G, y=value, color=method)) + 
@@ -209,10 +221,12 @@ quality %>%
   scale_x_continuous(breaks = 2:10) + 
   facet_wrap(. ~ metric, scales = "free")
 
-class_kmeans = apply_clust(y, G = 4, method = "K-means")
-class_ward = apply_clust(y, G = 4, method = "Ward")
-class_pam = apply_clust(y, G = 4, method = "PAM")
-class_gmm = apply_clust(y, G = 4, method = "GMM")
+set.seed(1)
+Gsel = 4
+class_kmeans = apply_clust(y, G = Gsel, method = "K-means")
+class_ward = apply_clust(y, G = Gsel, method = "Ward")
+class_pam = apply_clust(y, G = Gsel, method = "PAM")
+class_gmm = apply_clust(y, G = Gsel, method = "GMM")
 
 clust_scatter = function(data, class) {
   ggpairs(
@@ -242,6 +256,7 @@ index_seq_plot(ct_df, class_gmm)
 
 ct_df$Z = class_kmeans
 
+saveRDS(ct_df, "analysis/results/country_Z.rds")
 ##### explaning Z #####
 ct_df %>%
   left_join(
@@ -255,12 +270,14 @@ ct_df %>%
   geom_line() + 
   geom_point() + 
   geom_ribbon(aes(x=age, ymin = lq, ymax = uq, 
-                  fill=factor(Z)), alpha = 0.10, inherit.aes = F) #+ 
+                  fill=factor(Z)), alpha = 0.20, inherit.aes = F) #+ 
   #viridis::scale_fill_viridis(discrete = T) + 
   #viridis::scale_color_viridis(discrete = T)
 
-ct_df$Z = factor(ct_df$Z, labels = c("High+Adult", "Mid", "Low", "High"))
-ct_df$Z
+ct_df$Z = factor(ct_df$Z, labels = c("High", "Low", "High+Adult", "Mid"))
+
+z_levels = rev(c("Low", "Mid", "High+Adult", "High"))
+
 
 Z_matrix = ct_df %>%
   select(country, year, Z) %>%
@@ -272,7 +289,6 @@ rownames(Z_matrix) = ct_df$country %>% unique()
 
 Z_seq = seqdef(Z_matrix, var = colnames(Z_matrix), id = rownames(Z_matrix))
 
-z_levels = c("High", "High+Adult", "Mid", "Low")
 
 Z_matrix %>% 
   as.data.frame() %>%
@@ -308,12 +324,13 @@ Hdf = lapply(2:10, function(G){
 }) %>%
   do.call(rbind, .)
 
+saveRDS(Hdf, "analysis/results/entropy.rds")
+
 Hdf %>%
   ggplot(aes(x=Period, y=H, group=G, color=G)) + 
   geom_point() + 
   geom_line() + 
-  viridis::scale_color_viridis(discrete = T) + 
-  theme_minimal()
+  viridis::scale_color_viridis(discrete = T)
 
 #### finding W_i ####
 apply_clust_W = function(Z_matrix, Z_dist, G) {
@@ -368,7 +385,10 @@ state_couts
 Z_dist = seqdist(Z_seq, method="OM", sm=state_couts) %>% as.dist()
 Z_dist
 
+set.seed(1)
 w_quality = calc_W_quality(Z_seq, Z_dist, Gmax = 10)
+
+saveRDS(w_quality, "analysis/results/w_quality.rds")
 
 w_quality %>%
   gather(metric, value, -method, -G) %>%
@@ -380,11 +400,18 @@ w_quality %>%
 
 medseq_fit = MEDseq_fit(
   seqs = Z_seq, G = 1:10, 
-  weights=NULL, 
-  modtype = c("CC", "UC", "CU", "UU"), 
+  weights=NULL 
+  #modtype = c("CC", "UC", "CU", "UU"), 
 )
 
+saveRDS(medseq_fit, "analysis/results/medseq_fit.rds")
+
 summary(medseq_fit)
+
+
+rownames(Z_matrix)[medseq_fit$MAP == 0]
+rownames(Z_matrix)[medseq_fit$MAP == 1]
+rownames(Z_matrix)[medseq_fit$MAP == 2]
 
 medseq_fit$BIC %>%
   as.data.frame() %>%
@@ -399,6 +426,7 @@ medseq_fit$BIC %>%
 
 w_fit = apply_clust_W(Z_seq, Z_om, G = 3)
 
+w_fit$medseq
 ##### ward #### 
 plot(w_fit$ward$fit)
 
@@ -433,13 +461,17 @@ ggsave("analysis/plots/seq_index_plot.pdf", width = 7, height = 4)
 pam_class = w_fit$pam$class
 names(pam_class) = rownames(Z_matrix)
 
-Z_matrix %>%
+cl_state_tidy = Z_matrix %>%
   as.data.frame() %>%
   mutate(W = pam_class) %>%
   gather(year, Z, -W) %>%
-  mutate(year = as.numeric(year), Z = factor(Z, levels = z_levels)) %>%
+  mutate(year = as.numeric(year), Z = factor(Z, levels = z_levels))
+
+saveRDS(cl_state_tidy, "analysis/results/W_states_distri.rds")
+
+cl_state_tidy %>%
   ggplot(aes(x=year, fill=Z)) + 
-  geom_bar(position = "fill", width = 1, color="grey80") + 
+  geom_bar(position = "fill", width = 1, color="black") + 
   viridis::scale_fill_viridis(discrete = T) + 
   labs(x="Year", y="Proportion") + 
   facet_grid(. ~ W) + 
@@ -480,6 +512,9 @@ clust_order = clust_order[c(1, 3, 2)] %>% do.call(c, .)
 
 pam_class[clust_order]
 
+ct_df %>%
+  mutate(country = factor(country, levels = clust_order)) %>%
+  saveRDS("analysis/results/W_final.rds")
 
 ct_df %>%
   mutate(country = factor(country, levels = clust_order)) %>%

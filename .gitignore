@@ -9,3 +9,4 @@ analysis/models/*
 analysis/tests/testthat/save_test/*
 slurm-*
 *test-build-*
+/analysis/presentations
