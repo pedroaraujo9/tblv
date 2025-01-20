@@ -17,7 +17,7 @@
     approx_mloglike = appx, cores = 1, seed = 1
   )
 
-  waic = compute_WAIC(post)
+  waic = btblv::compute_WAIC(post)
 
   metrics = list(
     appx = appx,
@@ -100,7 +100,8 @@
                             model_name_pattern,
                             save_gdrive,
                             gdrive_folder_id,
-                            local_path) {
+                            local_path,
+                            max_treedepth = 10) {
 
   fit_save_r_script = .libPaths()[1] |>
     paste0("/fitbtblv/fit_save_btblv_terminal.R")
@@ -118,7 +119,8 @@
     model_name_pattern='{model_name_pattern}'
     save_gdrive={save_gdrive}
     gdrive_folder_id='{gdrive_folder_id}'
-    local_path='{local_path}'"
+    local_path='{local_path}'
+    max_treedepth='{max_treedepth}'"
   ) %>%
     as.character() %>%
     gsub("\n", " ", .)

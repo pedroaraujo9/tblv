@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_save_btblv.R
 \name{fit_save_btblv}
 \alias{fit_save_btblv}
-\title{Fit btblv model and save it locally or in a Google drive folder}
+\title{Fit and Save a BTBLV Model}
 \usage{
 fit_save_btblv(
   btblv_data_path,
@@ -19,53 +19,77 @@ fit_save_btblv(
   save_gdrive,
   gdrive_folder_id,
   local_path,
+  max_treedepth = 10,
   ...
 )
 }
 \arguments{
-\item{btblv_data_path}{string with path to the \code{btblv::btblv_data} object.}
+\item{btblv_data_path}{Character. Path to the RDS file containing the BTBLV data.}
 
-\item{K}{integer with the latent dimension size.}
+\item{K}{Integer. Number of clusters or latent variables to fit in the model.}
 
-\item{iter}{integer with the number of iterations}
+\item{iter}{Integer. Number of iterations for the sampler.}
 
-\item{warmup}{integer with the warm-up size. See \code{rstan::sampling}.}
+\item{warmup}{Integer. Number of warmup iterations for the sampler.}
 
-\item{thin}{integer with the thinning size. See \code{rstan::sampling}.}
+\item{thin}{Integer. Thinning interval for the sampler.}
 
-\item{chains}{integer with the number of chains. See \code{rstan::sampling}.}
+\item{chains}{Integer. Number of chains for the sampler.}
 
-\item{precision}{string with the type of precision. It is "single" if all
-items have the same precision or "specific" if each item has its own precision
-parameter. Default is "single".}
+\item{precision}{Character. Precision parameter for the model.}
 
-\item{seed}{integer with the random seed.}
+\item{seed}{Integer. Seed for random number generation.}
 
-\item{mc_samples}{integer with the Monte Carlo samples for the marginal likelihood approximation.}
+\item{mc_samples}{Integer. Number of Monte Carlo samples for posterior predictive metrics.}
 
-\item{config_path}{string with the path to the config.yaml with credentials for google drive.
-Default is \code{NULL}.}
+\item{config_path}{Character. Path to the configuration file (YAML format) for authentication and other settings.}
 
-\item{model_name_pattern}{string value with characters to be added to the model name.
-It will be used as the name of the final file to be saved.}
+\item{model_name_pattern}{Character. Pattern for generating the model name.}
 
-\item{save_gdrive}{logical value. If \code{TRUE} saves the model on Google drive.
-If \code{FALSE} saves the model locally.}
+\item{save_gdrive}{Logical. If \code{TRUE}, saves the model to Google Drive.}
 
-\item{gdrive_folder_id}{string with the Google drive folder id.}
+\item{gdrive_folder_id}{Character. Google Drive folder ID to save the model. Required if \code{save_gdrive} is \code{TRUE}.}
 
-\item{local_path}{string with the path of the folder used to store local data.
-It also needed for the Google drive saving.}
+\item{local_path}{Character. Local directory path to save models and temporary files.}
 
-\item{...}{additional \code{rstan::sampling} parameters.}
+\item{max_treedepth}{Integer. Maximum tree depth for Stan's Hamiltonian Monte Carlo sampler. Default is 10.}
+
+\item{...}{Additional arguments passed to the \code{btblv::fit_btblv} function.}
 }
 \value{
-\code{TRUE} if the model was saved, \code{FALSE} otherwise.
+Logical. \code{TRUE} if the model was fitted and saved successfully, \code{FALSE} if the model was already saved.
 }
 \description{
-Fit btblv model and save it locally or in a Google drive folder
+This function fits a Bayesian Tree-Based Latent Variable (BTBLV) model, calculates metrics,
+and saves the results either locally or to Google Drive. It handles authentication and ensures
+the model is not re-fitted if already saved.
+}
+\details{
+\itemize{
+\item Before fitting, the function checks if a model with the same name already exists locally or on Google Drive.
+\item If \code{save_gdrive} is \code{TRUE}, Google Drive authentication is performed using credentials specified in the YAML configuration file.
+\item The model fitting process includes posterior predictive metric calculations using the specified number of Monte Carlo samples.
+}
 }
 \examples{
-##
+\dontrun{
+  fit_save_btblv(
+    btblv_data_path = "data/btblv_data.rds",
+    K = 3,
+    iter = 2000,
+    warmup = 1000,
+    thin = 1,
+    chains = 4,
+    precision = 0.01,
+    seed = 42,
+    mc_samples = 100,
+    config_path = "config.yaml",
+    model_name_pattern = "model_K",
+    save_gdrive = TRUE,
+    gdrive_folder_id = "1A2B3C4D5E6F7G8H9I",
+    local_path = "output",
+    max_treedepth = 12
+  )
+}
 
 }
