@@ -94,8 +94,8 @@ fit_save_btblv = function(btblv_data_path,
   models_saved = .get_models_saved(save_gdrive, local_path, gdrive_folder_id)
 
   cat(paste0("\n\n----- MODELS SAVED -----\n\n"))
-  models_saved %>%
-    stringr::str_flatten("\n") %>%
+  models_saved |>
+    stringr::str_flatten("\n") |>
     cat()
 
   #### model fit ####
@@ -143,8 +143,8 @@ fit_save_btblv = function(btblv_data_path,
       # updating list with models saved
       saveRDS(fit, paste0(local_path, "/", model_name))
 
-      model_name %>%
-        c(models_saved) %>%
+      model_name |>
+        c(models_saved) |>
         writeLines(paste0(local_path, "/models-saved-list.txt"))
 
     }
