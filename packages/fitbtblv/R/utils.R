@@ -3,9 +3,9 @@
                                   cores,
                                   seed) {
 
-  post = model_fit %>% btblv::extract_posterior(alpha_reference = "mode")
+  post = model_fit |> btblv::extract_posterior(alpha_reference = "mode")
 
-  appx = post %>%
+  appx = post |>
     tblvArmaUtils::approx_mloglike(
       N = mc_samples,
       seed = seed,
@@ -119,9 +119,9 @@
     save_gdrive={save_gdrive}
     gdrive_folder_id='{gdrive_folder_id}'
     local_path='{local_path}'"
-  ) %>%
-    as.character() %>%
-    gsub("\n", " ", .)
+  ) |>
+    as.character() |>
+    gsub("\n", " ", _)
 
   if(cluster_run == FALSE) {
 
