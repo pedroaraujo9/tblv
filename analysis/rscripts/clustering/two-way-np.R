@@ -10,7 +10,7 @@ library(cluster)
 library(clusterCrit)
 library(MEDseq)
 library(ggraph)
-
+source("analysis/rscripts/clustering/utils.R")
 #### data ####
 lf = readRDS("analysis/data/life_tables_5x1.rds")
 
@@ -118,108 +118,167 @@ y = summ$posterior_mean$theta
 
 colnames(y) = c("Elderly", "Adult", "Young", "Old")
 
-plot(summ$posterior_mean$sigma[, 1], summ$posterior_mean$phi[, 1])
+phi = summ$posterior_mean$phi[, 1]
+sigma = summ$posterior_mean$sigma[, 1]
+year = mx$year
+country = mx$country
+
+data.frame(phi, sigma, country = country %>% unique()) %>%
+  ggplot(aes(x=log(sigma), y=log(phi/(1-phi)), label=country)) + 
+  geom_label()
 
 plot_latent_effects(summ)
 
-ggpairs(as.data.frame(y))
+ggpairs(
+  data.frame(y, year = mx$year), 
+  columns = 1:4, 
+  mapping = aes(alpha = 0.01, color=year),
+  upper = list(continuous = wrap("points")) 
+) + 
+  scale_color_viridis_c(name = "Year")
+
+ggsave("analysis/plots/reduce_data.pdf", width = 8, height = 6.5)
 cor(y)
 
 y %>% apply(MARGIN = 2, FUN = sd)
 
 btblv::plot_latent_effects(summ)
-
+data.frame(y, year = mx$year, country = mx$country) %>%
+  gather(dim, value, -year, -country) %>%
+  ggplot(aes(x=year, y=value, group=country)) + 
+  geom_line() + 
+  facet_wrap(. ~ dim, scales = "free")
 
 saveRDS(summ, "analysis/results/summ_btblv-fit-K=4-clustering_1x1.rds")
+
 #### finding Z_{it} ####
-apply_clust = function(data, G, method) {
+ed = dist(y) %>% as.matrix()
+
+ed[1, country == "Australia"] %>% plot()
+ed[1, country == "Russia"] %>% plot()
+ed[1, country == "U.S.A."] %>% plot()
+
+colnames(ed) = paste0(country, "_", year)
+
+ed_df = ed %>%
+  as.data.frame() %>%
+  mutate(ct2 = colnames(.)) %>%
+  gather(ct1, d, -ct2) %>%
+  as_tibble() %>%
+  separate(ct2, into = c("country1", "year1"), sep = "_") %>%
+  separate(ct1, into = c("country2", "year2"), sep = "_") %>%
+  mutate(year1 = as.integer(year1), year2 = as.integer(year2)) %>%
+  filter(!((country1 == country2) & (year1 == year2)), year1 < year2)
+
+ed_df %>%
+  filter(country1 == "Australia", year1 == 1960, 
+         country2 %in% c("Australia", "Russia", "Belarus", "U.S.A", "U.K.")) %>%
+  mutate(year2 = as.integer(year2)) %>%
+  ggplot(aes(x=year2, y=d, color=country2, group=country2)) + 
+  geom_point() + 
+  geom_line()
+
+ed_df %>%
+  filter(country1 == "Australia", country2 == "Australia") %>%
+  ggplot(aes(x=year2, y=d, group=year1, color=year1)) + 
+  geom_point() + 
+  geom_line() + 
+  viridis::scale_color_viridis()
+
+ed_df %>%
+  filter(country1 == "Ireland", country2 == "Ireland") %>%
+  ggplot(aes(x=year2, y=d, group=year1, color=year1)) + 
+  geom_point() + 
+  geom_line() + 
+  viridis::scale_color_viridis()
+
+ed_df %>%
+  filter(country1 == "Russia", country2 == "Russia") %>%
+  ggplot(aes(x=year2, y=d, group=year1, color=year1)) + 
+  geom_point() + 
+  geom_line() + 
+  viridis::scale_color_viridis()
+
+ed_df %>%
+  filter(country1 == "U.S.A.", country2 == "U.S.A.") %>%
+  ggplot(aes(x=year2, y=d, group=year1, color=year1)) + 
+  geom_point() + 
+  geom_line() + 
+  viridis::scale_color_viridis()
+
+ed_df %>%
+  filter(country1 == "Ukraine", country2 == "Ukraine") %>%
+  ggplot(aes(x=year2, y=d, group=year1, color=year1)) + 
+  geom_point() + 
+  geom_line() + 
+  viridis::scale_color_viridis()
+
+compute_mahalanobis_pooled = function(x1, x2, n, cov1, cov2) {
+  n1 = n2 = n
   
-  set.seed(1)
+  #cov1 = cov(group1)
+  #cov2 = cov(group2)
   
-  if(method == "Ward") {
+  # Compute pooled covariance
+  pooled_cov = ((n1 - 1) * cov1 + (n2 - 1) * cov2) / (n1 + n2 - 2)
+  
+  # Compute Mahalanobis distance
+  dist = sqrt(mahalanobis(x1, x2, pooled_cov))
+  return(dist)
+}
+
+nn = nrow(y)
+
+Dw = matrix(nrow = nn, ncol = nn)
+for(i in 1:nn) {
+  cat(i, "\r")
+  for(j in i:nn) {
     
-    cl_ward = stats::hclust(
-      dist(data), 
-      method = "ward.D"
-    )
+    h = abs(year[i] - year[j])
     
-    class = cutree(cl_ward, k = G)
+    phii = phi[which(unique(country) == country[i])]
+    phij = phi[which(unique(country) == country[j])]
+    sigma2i = sigma[which(unique(country) == country[i])]^2
+    sigma2j = sigma[which(unique(country) == country[j])]^2
     
-  }else if(method == "K-means") {
-    
-    class = stats::kmeans(
-      data, 
-      centers = G, 
-      iter.max = 1000, 
-      nstart = 10, 
-      algorithm = "Hartigan-Wong"
-    )
-    
-    class = class$cluster
-    
-  }else if(method == "PAM") {
-    
-    class = cluster::pam(
-      x = data, 
-      k = G,
-      metric = "euclidean"
-    )
-    
-    class = class$clustering
-    
-  }else if(method == "GMM") {
-    class = Mclust(
-      data = data, 
-      G = G
-    )
-    
-    class = as.integer(class$classification)
+    cphi = (phii + phij)/2
+    csigma2 = (sigma2i + sigma2j)/2
+    cov = ((cphi^(h)) * (csigma2)/(1-cphi^2)) %>% rep(4) %>% diag()
+    Dw[i, j] = Dw[j, i] = mahalanobis(y[i, ], y[j, ], cov)
   }
-  
-  return(class)
 }
 
-calc_quality = function(data, Gmax, method) {
-  
-  metrics = purrr::map_df(2:Gmax, ~{
-    
-    class = apply_clust(data, G = .x, method = method)
-    
-    intCriteria(
-      traj = as.matrix(data), 
-      part = class, 
-      crit = c("Silhouette", "Calinski_Harabasz", "Point_biserial")
-    ) %>% 
-      as.data.frame() %>%
-      rename(ASW = silhouette, CH = calinski_harabasz, PBC = point_biserial)
-    
-  }) %>%
-    mutate(G = 2:10, method = method)
-  
-  return(metrics)
-}
-
-index_seq_plot = function(data, class) {
-  data %>%
-    mutate(class = factor(class)) %>%
-    ggplot(aes(x=year, y=country, fill=class)) + 
-    geom_tile(color="grey") + 
-    viridis::scale_fill_viridis(discrete = T)
-}
 
 quality = map_df(c("Ward", "K-means", "PAM", "GMM"), ~{
-  calc_quality(data = y, Gmax = 10, method = .x)
+  calc_quality(data_fit = y, data_quality = y, NULL, Gmax = 10, method = .x)
 })
 
 saveRDS(quality, "analysis/results/Z_quality_metrics.rds")
+
+quality2 = map_df(c("Ward", "K-means", "PAM", "GMM"), ~{
+  calc_quality(data_fit = y, data_quality = y, dist_matrix = Dw, Gmax = 10, method = .x)
+})
 
 quality %>%
   gather(metric, value, -G, -method) %>%
   ggplot(aes(x=G, y=value, color=method)) + 
   geom_point() + 
   geom_line() + 
+  labs(y="Metric value", color="Method") +
+  scale_x_continuous(breaks = 2:10) + 
+  facet_wrap(. ~ metric, scales = "free") + 
+  theme(legend.position = "top")
+
+ggsave("analysis/plots/quality_metrics.pdf", width = 7, height = 3)
+
+quality2 %>%
+  gather(metric, value, -G, -method) %>%
+  ggplot(aes(x=G, y=value, color=method)) + 
+  geom_point() + 
+  geom_line() + 
   scale_x_continuous(breaks = 2:10) + 
   facet_wrap(. ~ metric, scales = "free")
+
 
 set.seed(1)
 Gsel = 4
@@ -228,12 +287,6 @@ class_ward = apply_clust(y, G = Gsel, method = "Ward")
 class_pam = apply_clust(y, G = Gsel, method = "PAM")
 class_gmm = apply_clust(y, G = Gsel, method = "GMM")
 
-clust_scatter = function(data, class) {
-  ggpairs(
-    data.frame(data), 
-    aes(color= factor(class))
-  )
-}
 
 clust_scatter(y, class_kmeans)
 clust_scatter(y, class_ward)
@@ -257,7 +310,11 @@ index_seq_plot(ct_df, class_gmm)
 ct_df$Z = class_kmeans
 
 saveRDS(ct_df, "analysis/results/country_Z.rds")
+
 ##### explaning Z #####
+ct_df$Z = factor(ct_df$Z, labels = c("High", "Low", "High+Adult", "Mid"))
+z_levels = rev(c("Low", "Mid", "High+Adult", "High"))
+
 ct_df %>%
   left_join(
     mx_tidy %>% select(country, year, age, mx)
@@ -266,18 +323,17 @@ ct_df %>%
   group_by(Z, age) %>%
   summarise(median = median(log_mx), 
             lq = quantile(log_mx, 0.0275), uq = quantile(log_mx, 0.975)) %>%
-  ggplot(aes(x=age, y=median, color=factor(Z))) + 
+  ggplot(aes(x=age, y=median, color=factor(Z, levels = z_levels))) + 
   geom_line() + 
   geom_point() + 
   geom_ribbon(aes(x=age, ymin = lq, ymax = uq, 
-                  fill=factor(Z)), alpha = 0.20, inherit.aes = F) #+ 
-  #viridis::scale_fill_viridis(discrete = T) + 
-  #viridis::scale_color_viridis(discrete = T)
+                  fill=factor(Z, levels = z_levels)), alpha = 0.20, inherit.aes = F) + 
+  viridis::scale_fill_viridis(discrete = T) + 
+  viridis::scale_color_viridis(discrete = T) + 
+  labs(x="Age group", y="Median mortality", color=expression(Z[it]), 
+       fill=expression(Z[it]))
 
-ct_df$Z = factor(ct_df$Z, labels = c("High", "Low", "High+Adult", "Mid"))
-
-z_levels = rev(c("Low", "Mid", "High+Adult", "High"))
-
+ggsave("analysis/plots/cluster-median-mortality.pdf", width = 6, height = 3.5)
 
 Z_matrix = ct_df %>%
   select(country, year, Z) %>%
@@ -289,16 +345,17 @@ rownames(Z_matrix) = ct_df$country %>% unique()
 
 Z_seq = seqdef(Z_matrix, var = colnames(Z_matrix), id = rownames(Z_matrix))
 
-
 Z_matrix %>% 
   as.data.frame() %>%
   gather(year, Z) %>%
   mutate(Z = factor(Z, levels = z_levels)) %>%
   ggplot(aes(x=as.numeric(year), fill=Z)) + 
-  geom_bar(position = "fill", width = 1, color="grey80") + 
+  geom_bar(position = "fill", width = 1, color="grey10") + 
   viridis::scale_fill_viridis(discrete = T) + 
-  labs(x="Year", y="Proportion") + 
+  labs(x="Year", y="Proportion", fill=expression(Z[it])) + 
   theme_minimal()
+
+ggsave("analysis/plots/Z-distri.pdf", width = 6, height = 3.5)
 
 #### entropy ####
 Hdf = lapply(2:10, function(G){
@@ -324,61 +381,18 @@ Hdf = lapply(2:10, function(G){
 }) %>%
   do.call(rbind, .)
 
-saveRDS(Hdf, "analysis/results/entropy.rds")
+ggsave("analysis/plots/Entropy.pdf", width = 6, height = 3.5)
 
 Hdf %>%
   ggplot(aes(x=Period, y=H, group=G, color=G)) + 
   geom_point() + 
   geom_line() + 
-  viridis::scale_color_viridis(discrete = T)
+  viridis::scale_color_viridis(discrete = T) + 
+  labs(y="Hs")
+
+ggsave()
 
 #### finding W_i ####
-apply_clust_W = function(Z_matrix, Z_dist, G) {
-  
-  ward_fit = stats::hclust(Z_dist, method = "ward.D")
-  ward_class = cutree(ward_fit, k = G)
-  
-  pam_fit = wcKMedoids(Z_dist, k = G, initialclust = ward_fit)
-  pam_class = pam_fit$clustering
-  
-  medseq_fit = MEDseq_fit(
-    seqs = Z_matrix, G = G, 
-    weights = NULL, 
-    modtype = c("CC", "UC", "CU", "UU"), 
-  )
-  
-  medseq_class = medseq_fit$MAP
-  
-  res = list(
-    ward = list(fit = ward_fit, class = ward_class),
-    pam = list(fit = pam_fit, class = pam_class),
-    medseq = list(fit = medseq_fit, class = medseq_class)
-  )
-  
-  return(res)
-}
-
-calc_W_quality = function(Z_matrix, Z_dist, Gmax) {
-  
-  metrics = purrr::map_df(2:Gmax, ~{
-    
-    fit = apply_clust_W(Z_matrix, Z_dist, G = .x)
-    
-    lapply(names(fit), function(method){
-      metrics = wcClusterQuality(Z_dist, factor(fit[[method]]$class))$stats
-      metrics[c("HG", "ASW", "CH")] %>%
-        rbind() %>%
-        as.data.frame() %>%
-        mutate(method = method)
-    }) %>%
-      do.call(rbind, .) %>%
-      mutate(G = .x)
-  })
-  
-  rownames(metrics) = NULL
-  
-  return(metrics)
-}
 
 state_couts = seqsubm(Z_seq, method = "TRATE")
 state_couts
@@ -392,16 +406,25 @@ saveRDS(w_quality, "analysis/results/w_quality.rds")
 
 w_quality %>%
   gather(metric, value, -method, -G) %>%
+  mutate(method = ifelse(method == "medseq", "MEDseq", method),
+         method = ifelse(method == "pam", "PAM", method),
+         method = ifelse(method == "ward", "Ward", method)) %>%
   ggplot(aes(x=G, y=value, color=method)) + 
   geom_point() + 
   geom_line() + 
   facet_wrap(. ~ metric, scales = "free") + 
-  scale_x_continuous(breaks = 2:10)
+  scale_x_continuous(breaks = 2:10) + 
+  labs(y="Metric value", color="Method: ", x="M (groups)") + 
+  theme(legend.position = "top")
+
+
+ggsave("analysis/plots/quality-metrics-W.pdf", width = 7, height = 3)
+
 
 medseq_fit = MEDseq_fit(
   seqs = Z_seq, G = 1:10, 
-  weights=NULL 
-  #modtype = c("CC", "UC", "CU", "UU"), 
+  weights=NULL, 
+  modtype = c("CC", "UC", "CU", "UU"), 
 )
 
 saveRDS(medseq_fit, "analysis/results/medseq_fit.rds")
@@ -422,7 +445,11 @@ medseq_fit$BIC %>%
   ggplot(aes(x=G, y=BIC, color=model)) + 
   geom_point() + 
   geom_line() + 
-  scale_x_continuous(breaks = 1:10)
+  labs(color="Model", x="M (groups)") +
+  scale_x_continuous(breaks = 1:10) 
+
+ggsave("analysis/plots/W-BIC.pdf", width = 6, height = 3.5)
+
 
 w_fit = apply_clust_W(Z_seq, Z_om, G = 3)
 
@@ -438,7 +465,6 @@ ggdendro::ggdendrogram(w_fit$ward$fit, segments = T) +
   theme(text = element_text(size = 20))
 
 ggsave("analysis/plots/W_dgram.pdf", width = 9, height = 6)
-
 
 ct_df %>%
   mutate(country = factor(country, levels = country_order)) %>%
