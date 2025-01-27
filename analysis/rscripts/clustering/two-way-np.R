@@ -1,16 +1,15 @@
 library(tidyverse)
 library(TraMineR)
 library(GGally)
-library(NbClust)
-library(dbscan)
 library(mclust)
 library(btblv)
 library(WeightedCluster)
 library(cluster)
-library(clusterCrit)
 library(MEDseq)
 library(ggraph)
+library(dbscan)
 source("analysis/rscripts/clustering/utils.R")
+
 #### data ####
 lf = readRDS("analysis/data/life_tables_5x1.rds")
 
@@ -46,7 +45,6 @@ mx_tidy = lf %>%
 mx = mx_tidy %>% spread(age, mx)
 mx_matrix = mx %>% select(-country, -year) %>% as.matrix()
 
-
 #### dimension reduction ####
 X = log(mx_matrix/(1-mx_matrix)) %>% scale()
 dec = X %>% cor() %>% eigen()
@@ -80,8 +78,8 @@ fit = fit_btblv(
 )
 
 #saveRDS(fit, "analysis/models/btblv-fit-K=4-clustering_1x1.rds")
-fit = readRDS("analysis/models/btblv-fit-K=4-clustering_1x1.rds")
-
+mod = readRDS("analysis/models/btblv-mx-1x1-precision=single-K=4.rds")
+fit = mod$btblv_fit
 post = fit %>% extract_posterior(apply_varimax = T)
 summ = post %>% posterior_summary()
 conv = check_convergence(post)
@@ -92,6 +90,12 @@ conv$phi
 conv$E$rhat %>% summary()
 conv$alpha
 conv$theta$rhat %>% summary()
+     
+alpha = summ$posterior_mean$alpha                                      
+alpha[, c(2, 3)] = -alpha[, c(2, 3)]
+
+post = fit %>% extract_posterior(alpha_reference = alpha, apply_varimax = T)
+summ = post %>% posterior_summary()
 
 summ$posterior_summary_df$alpha %>%
   ggplot(aes(x=age, y=mean, color=factor(K), fill=factor(K))) + 
@@ -103,16 +107,10 @@ summ$posterior_summary_df$alpha %>%
   scale_x_continuous(breaks = seq(0, 110, 10)) + 
   labs(x = "Age group x", color="Dim", fill="Dim", y=latex2exp::TeX("$\\alpha_{xk}$")) +
   scale_color_manual(values = c("chocolate1", "cornflowerblue", 
-                                            "darkolivegreen4","deeppink4"
+                                "darkolivegreen4","deeppink4"
   )) + 
   scale_fill_manual(values = c("chocolate1", "cornflowerblue", 
-                                           "darkolivegreen4","deeppink4"))
-     
-alpha = summ$posterior_mean$alpha                                      
-alpha[, 2:3] = -alpha[, 2:3]
-
-post = fit %>% extract_posterior(alpha_reference = alpha, apply_varimax = F)
-summ = post %>% posterior_summary()
+                               "darkolivegreen4","deeppink4"))
 
 y = summ$posterior_mean$theta
 
@@ -131,13 +129,19 @@ plot_latent_effects(summ)
 
 ggpairs(
   data.frame(y, year = mx$year), 
-  columns = 1:4, 
+  columns = 1:ncol(y), 
   mapping = aes(alpha = 0.01, color=year),
   upper = list(continuous = wrap("points")) 
 ) + 
   scale_color_viridis_c(name = "Year")
 
-ggsave("analysis/plots/reduce_data.pdf", width = 8, height = 6.5)
+ggpairs(
+  data.frame(y, year = mx$year), 
+  columns = 1:ncol(y), 
+  mapping = aes(alpha = 0.01) 
+)
+
+ggsave("analysis/plots/le-pairs.pdf", width = 8, height = 6.5)
 cor(y)
 
 y %>% apply(MARGIN = 2, FUN = sd)
@@ -146,10 +150,17 @@ btblv::plot_latent_effects(summ)
 data.frame(y, year = mx$year, country = mx$country) %>%
   gather(dim, value, -year, -country) %>%
   ggplot(aes(x=year, y=value, group=country)) + 
-  geom_line() + 
-  facet_wrap(. ~ dim, scales = "free")
+  geom_line(alpha = 0.9) + 
+  geom_point(size = 0.2) + 
+  facet_wrap(. ~ dim, scales = "free") + 
+  geom_hline(yintercept = 0, linetype = 2, alpha = 0.8, color = "red")
+
+ggsave("analysis/plots/le-over-time.pdf", width = 7, height = 4)
 
 saveRDS(summ, "analysis/results/summ_btblv-fit-K=4-clustering_1x1.rds")
+
+data.frame(y, year = mx$year, country = mx$country) %>%
+  saveRDS("analysis/rscripts/clustering/apps/GMM/data.rds")
 
 #### finding Z_{it} ####
 ed = dist(y) %>% as.matrix()
@@ -215,13 +226,7 @@ ed_df %>%
 
 compute_mahalanobis_pooled = function(x1, x2, n, cov1, cov2) {
   n1 = n2 = n
-  
-  #cov1 = cov(group1)
-  #cov2 = cov(group2)
-  
-  # Compute pooled covariance
   pooled_cov = ((n1 - 1) * cov1 + (n2 - 1) * cov2) / (n1 + n2 - 2)
-  
   # Compute Mahalanobis distance
   dist = sqrt(mahalanobis(x1, x2, pooled_cov))
   return(dist)
@@ -248,16 +253,19 @@ for(i in 1:nn) {
   }
 }
 
-
-quality = map_df(c("Ward", "K-means", "PAM", "GMM"), ~{
-  calc_quality(data_fit = y, data_quality = y, NULL, Gmax = 10, method = .x)
+##### Fitting models for Z ######
+quality = map_df(c("Ward", "K-means", "PAM", "GMM", "Fuzzy"), ~{
+  print(.x)
+  calc_quality(
+    data_fit = y, 
+    data_quality = y, 
+    dist_matrix = NULL, 
+    Gmax = 10, 
+    method = .x
+  )
 })
 
 saveRDS(quality, "analysis/results/Z_quality_metrics.rds")
-
-quality2 = map_df(c("Ward", "K-means", "PAM", "GMM"), ~{
-  calc_quality(data_fit = y, data_quality = y, dist_matrix = Dw, Gmax = 10, method = .x)
-})
 
 quality %>%
   gather(metric, value, -G, -method) %>%
@@ -269,24 +277,16 @@ quality %>%
   facet_wrap(. ~ metric, scales = "free") + 
   theme(legend.position = "top")
 
-ggsave("analysis/plots/quality_metrics.pdf", width = 7, height = 3)
+ggsave("analysis/plots/quality-metrics.pdf", width = 7, height = 3)
 
-quality2 %>%
-  gather(metric, value, -G, -method) %>%
-  ggplot(aes(x=G, y=value, color=method)) + 
-  geom_point() + 
-  geom_line() + 
-  scale_x_continuous(breaks = 2:10) + 
-  facet_wrap(. ~ metric, scales = "free")
-
-
-set.seed(1)
 Gsel = 4
+class_kmeans_raw = apply_clust(mx_matrix, G = Gsel, method = "K-means")
+class_kmeans_log = apply_clust(log(mx_matrix), G = Gsel, method = "K-means")
 class_kmeans = apply_clust(y, G = Gsel, method = "K-means")
 class_ward = apply_clust(y, G = Gsel, method = "Ward")
 class_pam = apply_clust(y, G = Gsel, method = "PAM")
 class_gmm = apply_clust(y, G = Gsel, method = "GMM")
-
+class_fuzzy = apply_clust(y, G = Gsel, method = "Fuzzy")
 
 clust_scatter(y, class_kmeans)
 clust_scatter(y, class_ward)
@@ -302,17 +302,44 @@ ct_df = mx_tidy %>%
   select(country, year) %>%
   distinct()
 
+index_seq_plot(ct_df, class_kmeans_raw)
+index_seq_plot(ct_df, class_kmeans_log)
 index_seq_plot(ct_df, class_kmeans)
 index_seq_plot(ct_df, class_ward)
 index_seq_plot(ct_df, class_pam)
+index_seq_plot(ct_df, class_fuzzy)
 index_seq_plot(ct_df, class_gmm)
 
 ct_df$Z = class_kmeans
 
+Z_matrix_int = ct_df %>%
+  select(country, year, Z) %>%
+  spread(year, Z) %>%
+  select(-country) %>%
+  as.matrix()
+
+
 saveRDS(ct_df, "analysis/results/country_Z.rds")
 
 ##### explaning Z #####
-ct_df$Z = factor(ct_df$Z, labels = c("High", "Low", "High+Adult", "Mid"))
+Z_centroid = data.frame(y, Z = ct_df$Z) %>% 
+  gather(dim, val, -Z) %>%
+  group_by(dim, Z) %>%
+  summarise(m = mean(val))
+
+Z_centroid %>%
+  spread(dim, m) %>%
+  select(Z, Young, Adult, Old, Elderly) %>%
+  .[c(3, 4, 1, 2),]
+
+Z_centroid %>%
+  mutate(Z = factor(Z, levels = z_levels),
+         dim = factor(dim, levels = c("Young", "Adult", "Old", "Elderly"))) %>%
+  ggplot(aes(x=dim, y=Z, fill=m, label = round(m, 3))) +
+  geom_tile() + 
+  viridis::scale_fill_viridis()
+
+ct_df$Z = factor(ct_df$Z, labels = c("Mid", "Low", "High", "High+Adult"))
 z_levels = rev(c("Low", "Mid", "High+Adult", "High"))
 
 ct_df %>%
@@ -342,7 +369,6 @@ Z_matrix = ct_df %>%
   as.matrix()
 
 rownames(Z_matrix) = ct_df$country %>% unique()
-
 Z_seq = seqdef(Z_matrix, var = colnames(Z_matrix), id = rownames(Z_matrix))
 
 Z_matrix %>% 
@@ -381,30 +407,54 @@ Hdf = lapply(2:10, function(G){
 }) %>%
   do.call(rbind, .)
 
-ggsave("analysis/plots/Entropy.pdf", width = 6, height = 3.5)
-
 Hdf %>%
   ggplot(aes(x=Period, y=H, group=G, color=G)) + 
   geom_point() + 
   geom_line() + 
   viridis::scale_color_viridis(discrete = T) + 
-  labs(y="Hs")
+  labs(y="Normalized Entropy")
 
-ggsave()
+ggsave("analysis/plots/Entropy.pdf", width = 6, height = 3.5)
 
 #### finding W_i ####
-
 state_couts = seqsubm(Z_seq, method = "TRATE")
 state_couts
-Z_dist = seqdist(Z_seq, method="OM", sm=state_couts) %>% as.dist()
-Z_dist
+
+centroid_penalty
+
+Z_centroid_matrix = Z_centroid %>% spread(dim, m) %>% as.data.frame()
+rownames(Z_centroid_matrix) = Z_centroid_matrix$Z
+Z_centroid_matrix = Z_centroid_matrix %>% select(-Z) %>% as.matrix()
+centroid_penalty = Z_centroid_matrix %>% dist() %>% as.matrix()
+
+
+Z_OM_dist = seqdist(Z_seq, method="OM", sm=centroid_penalty) %>% as.dist()
+Z_HAM_dist = seqdist(Z_seq, method="HAM") %>% as.dist()
 
 set.seed(1)
-w_quality = calc_W_quality(Z_seq, Z_dist, Gmax = 10)
+w_ham_quality = calc_W_quality(Z_seq, Z_HAM_dist, Gmax = 10)
+w_om_quality = calc_W_quality(Z_seq, Z_OM_dist, Gmax = 10)
 
-saveRDS(w_quality, "analysis/results/w_quality.rds")
 
-w_quality %>%
+library(ClickClust)
+
+Z_matrix
+Z_list = lapply(1:nrow(Z_matrix), FUN = function(i){
+  Z_matrix_int[i, ]
+}) %>%
+  click.read()
+
+Z_list$X
+
+fit = click.EM(X = Z_list$X, y = Z_list$y, K = 2)
+
+countries[fit$id == 2]
+countries[fit$id == 1]
+
+
+#saveRDS(w_quality, "analysis/results/w_quality.rds")
+
+w_om_quality %>%
   gather(metric, value, -method, -G) %>%
   mutate(method = ifelse(method == "medseq", "MEDseq", method),
          method = ifelse(method == "pam", "PAM", method),
@@ -417,9 +467,20 @@ w_quality %>%
   labs(y="Metric value", color="Method: ", x="M (groups)") + 
   theme(legend.position = "top")
 
+w_ham_quality %>%
+  gather(metric, value, -method, -G) %>%
+  mutate(method = ifelse(method == "medseq", "MEDseq", method),
+         method = ifelse(method == "pam", "PAM", method),
+         method = ifelse(method == "ward", "Ward", method)) %>%
+  ggplot(aes(x=G, y=value, color=method)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(. ~ metric, scales = "free") + 
+  scale_x_continuous(breaks = 2:10) + 
+  labs(y="Metric value", color="Method: ", x="M (groups)") + 
+  theme(legend.position = "top")
 
 ggsave("analysis/plots/quality-metrics-W.pdf", width = 7, height = 3)
-
 
 medseq_fit = MEDseq_fit(
   seqs = Z_seq, G = 1:10, 
@@ -451,7 +512,7 @@ medseq_fit$BIC %>%
 ggsave("analysis/plots/W-BIC.pdf", width = 6, height = 3.5)
 
 
-w_fit = apply_clust_W(Z_seq, Z_om, G = 3)
+w_fit = apply_clust_W(Z_seq, Z_OM_dist, G = 3)
 
 w_fit$medseq
 ##### ward #### 
@@ -466,6 +527,8 @@ ggdendro::ggdendrogram(w_fit$ward$fit, segments = T) +
 
 ggsave("analysis/plots/W_dgram.pdf", width = 9, height = 6)
 
+w_fit$ward$class[country_order]
+
 ct_df %>%
   mutate(country = factor(country, levels = country_order)) %>%
   ggplot(aes(x=year, y=country, fill=factor(Z, levels = z_levels))) + 
@@ -478,13 +541,13 @@ ct_df %>%
   geom_segment(aes(x = 1960, xend = 2010, y="Slovakia", yend = "Slovakia"), 
              position = position_nudge(y=+0.5), color="red")
 
-ggsave("analysis/plots/seq_index_plot.pdf", width = 7, height = 4)
+ggsave("analysis/plots/seq-index-plot.pdf", width = 7, height = 4)
 
 ##### pam #####
 #Z1 = model.matrix(rep(1, length(w_fit$pam$class)) ~ -1 + factor(w_fit$pam$class)) 
 #Z2 = model.matrix(rep(1, length(w_fit$pam$class)) ~ -1 + factor(w_fit$ward$class)) 
 
-pam_class = w_fit$pam$class
+pam_class = w_fit$ward$class
 names(pam_class) = rownames(Z_matrix)
 
 cl_state_tidy = Z_matrix %>%
@@ -497,82 +560,17 @@ saveRDS(cl_state_tidy, "analysis/results/W_states_distri.rds")
 
 cl_state_tidy %>%
   ggplot(aes(x=year, fill=Z)) + 
-  geom_bar(position = "fill", width = 1, color="black") + 
+  geom_bar(position = "fill", width = 1, color="grey10") + 
   viridis::scale_fill_viridis(discrete = T) + 
   labs(x="Year", y="Proportion") + 
   facet_grid(. ~ W) + 
-  theme_minimal()
-
-medoids = Z_matrix[unique(pam_class), ]
-medoids
-
-medoid_df = medoids %>%
-  as.data.frame() %>%
-  mutate(medoid = rownames(.)) %>%
-  gather(year, Z, -medoid) 
-
-medoid_df %>%
-  group_by(medoid, Z) %>%
-  summarise(prop = n()/51) %>%
-  spread(Z, prop)
-
-medoid_seq = seqdef(medoids, var = colnames(medoids), id = rownames(medoids))
-state_couts = seqsubm(medoid_seq, method = "TRATE")
-state_couts
-
-med_cl = seqdist(medoid_seq, method = "OM", sm = state_couts) %>%
-  as.dist() %>%
-  hclust(method = "ward.D")
-
-
-clust_order = lapply(unique(pam_class), function(x){
-  f = pam_class[pam_class == x]
-  cl = as.matrix(Z_dist)[names(f), names(f)] %>% 
-    as.dist() %>% 
-    hclust(method = "ward.D")
-  
-  cl$labels[cl$order]
-})
-
-clust_order = clust_order[c(1, 3, 2)] %>% do.call(c, .)
-
-pam_class[clust_order]
-
-ct_df %>%
-  mutate(country = factor(country, levels = clust_order)) %>%
-  saveRDS("analysis/results/W_final.rds")
-
-ct_df %>%
-  mutate(country = factor(country, levels = clust_order)) %>%
-  ggplot(aes(x=year, y=country, fill=factor(Z, levels = z_levels))) + 
-  geom_tile(color="grey") + 
-  viridis::scale_fill_viridis(discrete = T) + 
   theme_minimal() + 
-  labs(x="Period", y="Country", fill=expression(Z[it])) + 
-  geom_segment(aes(x = 1960, xend = 2010, y="Canada", yend = "Canada"), 
-               position = position_nudge(y=+0.5), color="red") + 
-  geom_segment(aes(x = 1960, xend = 2010, y="Slovakia", yend = "Slovakia"), 
-               position = position_nudge(y=+0.5), color="red")
+  theme(legend.position = "top")
+
+ggsave("analysis/plots/cluster-prop-states.pdf", width = 8, height = 3)
 
 
-seqdist(Z_seq, method = "HAM")
 
-adj_matrix = Z_dist %>% as.matrix()
-
-for(i in rownames(adj_matrix)) {
-  for(j in rownames(adj_matrix)) {
-    adj_matrix[i, j] = sum(Z_matrix[i, ] == Z_matrix[j, ])
-  }
-}
-
-for(i in 1:nrow(adj_matrix)) {
-  adj_matrix[i, i] = 0
-}
-
-g = graph_from_adjacency_matrix(adj_matrix, mode = "undirected", weighted = TRUE)
-
-
-V(g)$class = pam_class
 # Plot the graph using ggraph
 ggraph(g, layout = "fr") +  # Fruchterman-Reingold layout
   geom_edge_link(aes(alpha = weight), color = "gray") +  # Edges with alpha based on weight

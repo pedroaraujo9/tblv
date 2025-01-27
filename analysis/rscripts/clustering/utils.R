@@ -1,3 +1,8 @@
+library(e1071)
+library(mclust)
+library(cluster)
+library(WeightedCluster)
+
 apply_clust = function(data, dist_matrix = NULL, G, method) {
   
   set.seed(1)
@@ -24,7 +29,7 @@ apply_clust = function(data, dist_matrix = NULL, G, method) {
       data, 
       centers = G, 
       iter.max = 1000, 
-      nstart = 10, 
+      nstart = 50, 
       algorithm = "Hartigan-Wong"
     )
     
@@ -40,11 +45,15 @@ apply_clust = function(data, dist_matrix = NULL, G, method) {
     
     class = class$clustering
     
+  }else if(method == "Fuzzy"){
+    class = cmeans(data, centers = G, m = 2, iter.max = 100, method = "cmeans")
+    class = class$cluster
+    
   }else if(method == "GMM") {
     class = Mclust(
       data = data, 
       G = G,
-      hc = TRUE
+      modelNames = c("VII")
     )
     
     class = as.integer(class$classification)
@@ -57,15 +66,27 @@ calc_quality = function(data_fit, data_quality, dist_matrix, Gmax, method) {
   
   metrics = purrr::map_df(2:Gmax, ~{
     
-    class = apply_clust(data_fit, dist_matrix, G = .x, method = method)
+    class = apply_clust(data = data_fit, dist_matrix = dist_matrix, G = .x, method = method)
+    metrics = wcClusterQuality(dist(data_quality), factor(class))$stats
     
-    intCriteria(
-      traj = as.matrix(data_quality), 
-      part = class, 
-      crit = c("Silhouette", "Calinski_Harabasz", "Point_biserial")
-    ) %>% 
+    dbcvs_score = DBCVindex::dbcv(
+      data = data_quality, labels = class, metric = "euclidean"
+    )
+    
+    metrics[c("HG", "ASW", "CHsq")] %>%
+      c("DBCVS" = dbcvs_score) %>% 
+      rbind() %>%
       as.data.frame() %>%
-      rename(ASW = silhouette, CH = calinski_harabasz, PBC = point_biserial)
+      mutate(method = method) %>%
+      rename(CH = CHsq)
+    
+    #intCriteria(
+    #  traj = as.matrix(data_quality), 
+    #  part = class, 
+    #  crit = c("Silhouette", "Calinski_Harabasz", "Gamma")
+    #) %>% 
+    #  as.data.frame() %>%
+    #  rename(ASW = silhouette, CH = calinski_harabasz)
     
   }) %>%
     mutate(G = 2:10, method = method)
@@ -75,8 +96,29 @@ calc_quality = function(data_fit, data_quality, dist_matrix, Gmax, method) {
 }
 
 index_seq_plot = function(data, class) {
+  
+  # state matrix
+  Z_matrix = data %>%
+    mutate(Z = class) %>%
+    dplyr::select(country, year, Z) %>%
+    spread(year, Z) %>%
+    select(-country) %>%
+    as.matrix()
+  
+  rownames(Z_matrix) = data$country %>% unique()
+  Z_seq = seqdef(Z_matrix, var = colnames(Z_matrix), id = rownames(Z_matrix))
+
+  # OM distance
+  state_couts = seqsubm(Z_seq, method = "TRATE")
+  Z_OM_dist = seqdist(Z_seq, method="OM", sm=state_couts) %>% as.dist()
+  cl = hclust(Z_OM_dist, method = "ward.D")
+  
+  country_order = cl$labels[cl$order]
+  
+  
   data %>%
     mutate(class = factor(class)) %>%
+    mutate(country = factor(country, levels = country_order)) %>%
     ggplot(aes(x=year, y=country, fill=class)) + 
     geom_tile(color="grey") + 
     viridis::scale_fill_viridis(discrete = T)
@@ -123,10 +165,11 @@ calc_W_quality = function(Z_matrix, Z_dist, Gmax) {
     
     lapply(names(fit), function(method){
       metrics = wcClusterQuality(Z_dist, factor(fit[[method]]$class))$stats
-      metrics[c("HG", "ASW", "CH")] %>%
+      metrics[c("HG", "ASW", "CHsq")] %>%
         rbind() %>%
         as.data.frame() %>%
-        mutate(method = method)
+        mutate(method = method) %>%
+        rename(CH = CHsq)
     }) %>%
       do.call(rbind, .) %>%
       mutate(G = .x)

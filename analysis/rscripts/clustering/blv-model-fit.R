@@ -13,6 +13,22 @@ download_models_gdrive(
   local_folder_path = "analysis/models"
 )
 
+mm = lapply(1:10, FUN = function(k){
+  print(k)
+  fit = readRDS(paste0("analysis/models/btblv-mx-1x1-precision=single-K=", k, ".rds")) 
+  post = fit$btblv_fit %>% extract_posterior()
+  conv = post %>% check_convergence()
+  
+  list(metrics = fit$metrics, conv = conv)
+})
+
+bic = lapply(mm, function(x){
+  x$metrics$bic
+}) |>
+  do.call(c, args = _) 
+
+bic %>% plot()
+
 
 m1 = readRDS("analysis/models/btblv-mx-1x1-precision=specific-K=4.rds")
 m2 = readRDS("analysis/models/btblv-mx-1x1-precision=single-K=4.rds")
@@ -26,7 +42,7 @@ pm2 = m2$btblv_fit %>% extract_posterior()
 c1 = pm1 %>% btblv::check_convergence()
 c2 = pm2 %>% btblv::check_convergence()
 
-pm1$post_sample_chains$beta[, , 1] %>% 
+pm1$post_sample_chains$sigma[, , 1] %>% 
   as.data.frame() %>%
   mutate(iter = 1:nrow(.)) %>%
   gather(chain, value, -iter) %>%
@@ -34,7 +50,15 @@ pm1$post_sample_chains$beta[, , 1] %>%
   geom_line()
 
 c1$beta
+c1$log_kappa
+c1$phi
+c1$E$rhat %>% summary()
+c1$theta$rhat %>% summary()
+c1$sigma
+
 c2$beta
+
+pm1$post_sample_chains$beta[, , 1] %>% colMeans()
 
 mm = lapply(1:10, FUN = function(k){
   fit = readRDS(paste0("analysis/models/btblv-mx-1x1-precision=single-K=", k, ".rds")) 
