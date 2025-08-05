@@ -10,3 +10,4 @@ analysis/tests/testthat/save_test/*
 slurm-*
 *test-build-*
 analysis/presentations/two-way-clustering.pdf
+sakey.json

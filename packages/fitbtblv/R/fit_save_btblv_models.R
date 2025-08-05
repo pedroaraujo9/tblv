@@ -77,7 +77,8 @@ fit_save_btblv_models = function(K_max,
                                  save_gdrive,
                                  gdrive_folder_id,
                                  local_path,
-                                 max_treedepth = 10) {
+                                 max_treedepth = 10,
+                                 service_account_path = "") {
 
   assertthat::assert_that(
     file.exists(local_path), msg = "folder in `local_path` does not exists."
@@ -102,7 +103,8 @@ fit_save_btblv_models = function(K_max,
     save_gdrive = save_gdrive,
     gdrive_folder_id = gdrive_folder_id,
     local_path = local_path,
-    max_treedepth = max_treedepth
+    max_treedepth = max_treedepth,
+    service_account_path = service_account_path
   )
 
   if(cluster_run == FALSE) {

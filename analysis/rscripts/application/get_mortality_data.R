@@ -1,6 +1,15 @@
+check_and_install <- function(pkg) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    install.packages(pkg)
+  } else {
+    message(sprintf("Package '%s' is already installed.", pkg))
+  }
+}
+
+lapply(c("HMDHFDplus", "tidyverse", "magrittr", "yaml"), FUN = check_and_install)
+
 library(HMDHFDplus)
 library(tidyverse)
-library(magrittr)
 library(yaml)
 
 # credentials with password and username to access HMD data

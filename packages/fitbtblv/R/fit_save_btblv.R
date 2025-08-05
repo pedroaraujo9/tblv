@@ -69,16 +69,14 @@ fit_save_btblv = function(btblv_data_path,
                           gdrive_folder_id,
                           local_path,
                           max_treedepth = 10,
+                          service_account_path = "",
                           ...) {
 
   #### Google drive authentication ####
   if(save_gdrive == TRUE) {
 
-    config = yaml::yaml.load_file(config_path)
-
     googledrive::drive_deauth()
-    googledrive::drive_auth_configure(path = config$gdrive$auth_credentials)
-    googledrive::drive_auth(email = config$gdrive$email)
+    googledrive::drive_auth(path = service_account_path)
 
   }
 

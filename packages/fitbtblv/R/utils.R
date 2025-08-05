@@ -243,7 +243,8 @@
                             save_gdrive,
                             gdrive_folder_id,
                             local_path,
-                            max_treedepth = 10) {
+                            max_treedepth = 10,
+                            service_account_path = "") {
 
   fit_save_r_script = .libPaths()[1] |>
     paste0("/fitbtblv/fit_save_btblv_terminal.R")
@@ -262,7 +263,8 @@
     save_gdrive={save_gdrive}
     gdrive_folder_id='{gdrive_folder_id}'
     local_path='{local_path}'
-    max_treedepth='{max_treedepth}'"
+    max_treedepth='{max_treedepth}'
+    service_account_path='{service_account_path}'"
   ) |>
     as.character() |>
     gsub("\n", " ", x = _)
