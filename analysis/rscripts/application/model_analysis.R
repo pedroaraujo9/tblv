@@ -4,15 +4,15 @@ library(patchwork)
 library(viridis)
 
 #### model ####
-K = 4
+K = 3
 precision = "single"
-model_fit = readRDS(paste0("analysis/models/btblv-precision=", 
+model_fit = readRDS(paste0("analysis/models/long-fit/2010/btblv-end-2010-precision=", 
                            precision, "-K=", K, ".rds"))
 
 data = model_fit$btblv_data
 
 set.seed(1)
-post_sample = model_fit %>% btblv::extract_posterior(
+post_sample = model_fit$btblv_fit %>% btblv::extract_posterior(
   alpha_reference = "pca", apply_varimax = TRUE
 )
 
@@ -23,11 +23,11 @@ alpha = post_summ$posterior_mean$alpha
 alpha[, 1] %>% plot()
 alpha[, 2] %>% plot()
 alpha[, 3] %>% plot()
-alpha[, 4] %>% plot()
 
+alpha[, 1] = -alpha[, 1]
 alpha[, 3] = -alpha[, 3]
 
-post_sample = model_fit %>% btblv::extract_posterior(
+post_sample = model_fit$btblv_fit %>% btblv::extract_posterior(
   alpha_reference = alpha, apply_varimax = FALSE
 )
 
@@ -54,7 +54,7 @@ ap = post_summ$posterior_summary_df$alpha %>%
   geom_point() + 
   geom_line() + 
   geom_hline(yintercept = 0, linetype=2, alpha=0.8) + 
-  scale_x_continuous(breaks = seq(0, 110, 10)) + 
+  scale_x_continuous(breaks = seq(0, 85, 10)) + 
   labs(x = "Age group x", color="Dim", fill="Dim", y=latex2exp::TeX("$\\alpha_{xk}$")) +
   scale_color_manual(values = c("chocolate1", "cornflowerblue", 
                                 "darkolivegreen4","deeppink4"

@@ -1,6 +1,7 @@
 library(tidyverse)
 library(tblvArmaUtils)
 library(btblv)
+library(latex2exp)
 
 compute_metrics = function(models_path, precision_type) {
   precision_match = paste0("precision=", precision_type)
@@ -18,14 +19,15 @@ compute_metrics = function(models_path, precision_type) {
     print(model_path)
     
     model_fit = readRDS(model_path)
-    post_sample = model_fit %>% 
+    
+    post_sample = model_fit$btblv_fit %>% 
       extract_posterior(alpha_reference = "mode")
     
     summ = post_sample %>% posterior_summary()
     pred = post_sample %>% posterior_predict(seed = 1)
     
     model_waic = post_sample %>% compute_WAIC() %>% .$waic
-    model_bic = post_sample %>% compute_BIC(N = 200000, seed = 1, cores = 5)
+    model_bic = post_sample %>% compute_BIC(model_fit$metrics$appx, seed = 1, cores = 5)
     
     data.frame(
       K = k,
@@ -41,7 +43,8 @@ compute_metrics = function(models_path, precision_type) {
 }
 
 #### compute metrics ####
-path = "analysis/models"
+path = "analysis/models/long-fit/2010"
+
 models = list.files(path)
 models_path = paste0(path, "/", models)
 models_path = models_path[stringr::str_detect( models_path, "btblv-")]
