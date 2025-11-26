@@ -6,7 +6,7 @@ library(EnvStats)
 
 
 #### HMD data from package btblv ####
-fit = readRDS("aalysis/data/data_model.rds")
+lf = readRDS("analysis/data/data_model.rds")
 
 life_tables = lf %>%
   filter(year %in% seq(1950, 2015, 5)) %>%
