@@ -74,7 +74,6 @@ sim_beta_plot = sim_study_df %>%
 
 sim_beta_plot
 
-
 sim_beta_plot = sim_study_df %>%
   filter(param == "beta") %>%
   group_by(trueK, age) %>%
