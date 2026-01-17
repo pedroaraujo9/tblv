@@ -82,6 +82,7 @@ life_tables %>%
   as_tibble() %>%
   mutate(age1 = colnames(.)) %>%
   gather(age2, value, -age1) %>%
+  filter(as.numeric(age1) < as.numeric(age2), age1 != age2) %>%
   mutate(value = as.numeric(value),
          age1 = factor(age1, levels = life_tables$age %>% unique()),
          age2 = factor(age2, levels = life_tables$age %>% unique())) %>%
@@ -92,7 +93,8 @@ life_tables %>%
   viridis::scale_fill_viridis() +
   guides(color = "none") +
   scale_color_manual(values = c("black", "white")) +
-  labs(x="Age group", y="Age group", fill="Corr")
+  labs(x="Age group", y="Age group", fill="Corr") + 
+  theme_minimal()
 
 ggsave("analysis/plots/correlation_matrix.pdf", width = 6.5, height = 4.5)
 

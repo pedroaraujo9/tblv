@@ -61,6 +61,7 @@ results = lapply(1:10, function(K){
 })
 
 results %>% saveRDS("analysis/results/model_comparison_check_fit.rds")
+
 results = readRDS("analysis/results/model_comparison_check_fit.rds")
 
 mu = purrr::map_df(results, ~.x$mu)
@@ -77,7 +78,7 @@ mu %>%
   dplyr::select(RMSE, model, K) %>%
   mutate(RMSE = 100*RMSE) %>%
   spread(model, RMSE) %>%
-  filter(K %in% c(2, 4, 6))
+  filter(K %in% c(2, 4, 5, 6, 7))
 
 mu %>%
   ggplot(aes(x=K, y=RMSE, color=model)) + 
@@ -93,7 +94,7 @@ mu %>%
 mu %>% 
   dplyr::select(MAPE, model, K) %>%
   spread(model, MAPE) %>%
-  filter(K %in% c(2, 4, 6)) %>%
+  filter(K %in% c(2, 4, 5, 6, 7)) %>%
   as.data.frame() %>%
   round(3)
 
@@ -136,10 +137,9 @@ distance %>%
 distance %>% 
   dplyr::select(corr, model, K) %>%
   spread(model, corr) %>%
-  filter(K %in% c(2, 4, 6)) %>%
+  filter(K %in% c(2, 4, 5, 6, 8)) %>%
   as.data.frame() %>%
   round(3)
-
 
 distance %>%
   ggplot(aes(x=K, y=corr, color=model)) + 
@@ -148,7 +148,7 @@ distance %>%
   scale_x_continuous(breaks = 1:10)
 
 #### prediction ####
-K = 4
+K = 6
 btblv_fit_single = readRDS(paste0("analysis/models/btblv-precision=single-K=", K, ".rds"))
 btblv_fit_specific = readRDS(paste0("analysis/models/btblv-precision=specific-K=", K, ".rds"))
 
@@ -156,10 +156,8 @@ btblv_fit_specific = readRDS(paste0("analysis/models/btblv-precision=specific-K=
 imifa_post = imifa_fit %>% IMIFA::get_IMIFA_results(Q = K) 
 post_bfa = imifa_post %>% btblv::imifa_to_blv(btblv_fit_specific$btblv_data, .)
 
-
 single_pred = btblv_fit_single %>% extract_posterior() %>% posterior_predict(seed = 1)
 bfa_pred = post_bfa %>% posterior_predict(seed = 1)
-
 
 avg_preds = single_pred$pred_post_summary_df %>%
   group_by(item, time) %>%
@@ -171,19 +169,17 @@ avg_preds = single_pred$pred_post_summary_df %>%
     by = c("item", "time")
   )
 
-
 avg_preds %>%
   filter(item %in% c(0, 20, 45, 100)) %>%
   mutate(item = paste0("Age group: ", item) %>% factor(levels = paste0(paste0("Age group: ", unique(item))))) %>%
   gather(model, avg, -item, -time) %>%
-  ggplot(aes(x=time, y=avg, color=model)) + 
+  ggplot(aes(x=time, y=log(avg), color=model)) + 
   geom_point() + 
   geom_line() + 
   facet_wrap(. ~ item, scales = "free") + 
   labs(x="Year", y="Average mortality", color="Model")
 
 ggsave("analysis/plots/pred_post.pdf", width = 5.5, height = 2.9)
-
 
 avg_preds %>%
   filter(!(item %in% c(0, 20, 45, 100))) %>%

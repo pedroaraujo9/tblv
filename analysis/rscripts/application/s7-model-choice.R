@@ -25,7 +25,7 @@ compute_metrics = function(models_path, precision_type) {
     pred = post_sample %>% posterior_predict(seed = 1)
     
     model_waic = post_sample %>% compute_WAIC() %>% .$waic
-    model_bic = post_sample %>% compute_BIC(N = 200000, seed = 1, cores = 5)
+    model_bic = post_sample %>% compute_BIC(N = 200000, seed = 1, cores = 6)
     
     data.frame(
       K = k,
@@ -45,6 +45,8 @@ path = "analysis/models"
 models = list.files(path)
 models_path = paste0(path, "/", models)
 models_path = models_path[stringr::str_detect( models_path, "btblv-")]
+models_path = models_path[!stringr::str_detect( models_path, "qx")]
+
 models_path
 
 metrics_path = paste0("analysis/results/", list.files("analysis/results"))
@@ -84,8 +86,12 @@ metrics_single_prec_tidy = metrics_single_prec %>%
   gather(metric, value, -K) %>%
   mutate(metric = factor(metric, levels = c("log_kappa", "BIC", "WAIC", "RMSE")))
 
+metrics_single_prec_tidy %>%
+  filter(metric == "BIC") %>%
+  arrange(value)
+
 levels(metrics_single_prec_tidy$metric) = c(
-  "log_kappa" = TeX("$\\log(\\kappa)$"),
+  "log_kappa" = latex2exp::TeX("$\\log(\\kappa)$"),
   "BIC" = latex2exp::TeX("BIC$_{m}$"),
   "WAIC" = latex2exp::TeX("WAIC$_{c}$"),
   "RMSE" = "RMSE"
@@ -105,7 +111,8 @@ metrics_single_prec %>%
   mutate(RMSE = 100*RMSE) %>%
   round(3) %>%
   select(-K) %>%
-  xtable::xtable()
+  xtable::xtable() %>%
+  print()
 
 #### specific precision ####
 metrics_specific_prec

@@ -4,7 +4,7 @@ library(patchwork)
 library(viridis)
 
 #### model ####
-K = 4
+K = 6
 precision = "single"
 model_fit = readRDS(paste0("analysis/models/btblv-precision=", 
                            precision, "-K=", K, ".rds"))
@@ -24,8 +24,11 @@ alpha[, 1] %>% plot()
 alpha[, 2] %>% plot()
 alpha[, 3] %>% plot()
 alpha[, 4] %>% plot()
+alpha[, 5] %>% plot()
+alpha[, 6] %>% plot()
 
 alpha[, 3] = -alpha[, 3]
+#alpha[, 1] = -alpha[, 1]
 
 post_sample = model_fit %>% btblv::extract_posterior(
   alpha_reference = alpha, apply_varimax = FALSE
@@ -47,6 +50,15 @@ bp
 post_summ$posterior_summary_df$log_kappa %>% round(3)
 
 #### alpha ####
+color_values = c(
+  "firebrick3", 
+  "cornflowerblue", 
+  "darkolivegreen3",
+  "goldenrod2",
+  "mediumpurple3", 
+  "darkcyan"
+)
+
 ap = post_summ$posterior_summary_df$alpha %>%
   ggplot(aes(x=age, y=mean, color=factor(K), fill=factor(K))) + 
   geom_ribbon(aes(x=age, ymin=li, ymax=ui, fill=factor(K)), alpha=0.4, 
@@ -56,11 +68,8 @@ ap = post_summ$posterior_summary_df$alpha %>%
   geom_hline(yintercept = 0, linetype=2, alpha=0.8) + 
   scale_x_continuous(breaks = seq(0, 110, 10)) + 
   labs(x = "Age group x", color="Dim", fill="Dim", y=latex2exp::TeX("$\\alpha_{xk}$")) +
-  scale_color_manual(values = c("chocolate1", "cornflowerblue", 
-                                "darkolivegreen4","deeppink4"
-  )) + 
-  scale_fill_manual(values = c("chocolate1", "cornflowerblue", 
-                               "darkolivegreen4","deeppink4")) + 
+  scale_color_manual(values = color_values) +
+  scale_fill_manual(values = color_values) +
   theme(text = element_text(size = 15))
 
 ap
@@ -93,16 +102,15 @@ mu_df = mu_df %>%
 
 example_log_mortality = mu_df %>% 
   ggplot(aes(x=age, y=btblv::logit(mu), color=dims)) + 
-  geom_line() + 
+  geom_line(linewidth = 1.1) + 
   scale_x_continuous(breaks = seq(0, 110, 10)) + 
-  scale_color_manual(values = c("chocolate1", "cornflowerblue", 
-                                "darkolivegreen4","deeppink4", "black"
-  ),
+  scale_color_manual(values = c(color_values,"black"),
   labels = unname(c(
     latex2exp::TeX("Max $\\theta_{i1}^{(t)}$"),
     latex2exp::TeX("Max $\\theta_{i2}^{(t)}$"),
     latex2exp::TeX("Max $\\theta_{i3}^{(t)}$"),
     latex2exp::TeX("Max $\\theta_{i4}^{(t)}$"),
+    latex2exp::TeX("Max $\\theta_{i5}^{(t)}$"),
     latex2exp::TeX("$\\beta_{x}$")
   ))) +
   labs(x="Age group x", y=latex2exp::TeX("logit$(\\mu_{xit})$"), color="") 
