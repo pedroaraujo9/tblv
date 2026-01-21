@@ -3,6 +3,7 @@ library(tblvArmaUtils)
 library(btblv)
 
 compute_metrics = function(models_path, precision_type) {
+  
   precision_match = paste0("precision=", precision_type)
   models_path = models_path[stringr::str_detect(models_path,  precision_match)]
   
@@ -18,7 +19,7 @@ compute_metrics = function(models_path, precision_type) {
     print(model_path)
     
     model_fit = readRDS(model_path)
-    post_sample = model_fit %>% 
+    post_sample = model_fit$btblv_fit %>% 
       extract_posterior(alpha_reference = "mode")
     
     summ = post_sample %>% posterior_summary()
@@ -34,6 +35,7 @@ compute_metrics = function(models_path, precision_type) {
       log_kappa = summ$posterior_mean$log_kappa %>% mean(),
       RMSE = sqrt(mean((pred$pred_post_summary_df$mean - pred$pred_post_summary_df$y)^2))
     )
+    
   }) %>%
     do.call(rbind, .)
   
@@ -44,43 +46,21 @@ compute_metrics = function(models_path, precision_type) {
 path = "analysis/models"
 models = list.files(path)
 models_path = paste0(path, "/", models)
-models_path = models_path[stringr::str_detect( models_path, "btblv-")]
-models_path = models_path[!stringr::str_detect( models_path, "qx")]
-
-models_path
+models_path = models_path[stringr::str_detect( models_path, "qx-complete-precision")]
+print(models_path)
 
 metrics_path = paste0("analysis/results/", list.files("analysis/results"))
-metrics_path
-
-# single precision
 single_prec_path = "analysis/results/model_choice_metrics_single.rds"
 
-if(!(single_prec_path %in% metrics_path)) {
-  metrics_single_prec = compute_metrics(models_path, "single")
-}else{
-  metrics_single_prec = readRDS(single_prec_path)
-}
-
+metrics_single_prec = compute_metrics(models_path, "single")
 saveRDS(metrics_single_prec, single_prec_path)
-
-# specific precision
-specific_prec_path = "analysis/results/model_choice_metrics_specific.rds"
-
-if(!(specific_prec_path %in% metrics_path)) {
-  metrics_specific_prec = compute_metrics(models_path, "specific")
-}else{
-  metrics_specific_prec = readRDS(specific_prec_path)
-}
-
-saveRDS(metrics_single_prec, specific_prec_path)
-
+metrics_single_prec = readRDS(single_prec_path)
 # analysis
 metrics_single_prec
 metrics_single_prec$BIC %>% plot()
 metrics_single_prec$WAIC %>% plot()
 metrics_single_prec$log_kappa %>% plot()
 metrics_single_prec$RMSE %>% plot()
-
 
 metrics_single_prec_tidy = metrics_single_prec %>%
   gather(metric, value, -K) %>%

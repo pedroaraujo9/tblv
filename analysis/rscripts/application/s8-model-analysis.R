@@ -6,10 +6,11 @@ library(viridis)
 #### model ####
 K = 6
 precision = "single"
-model_fit = readRDS(paste0("analysis/models/btblv-precision=", 
+model_fit = readRDS(paste0("analysis/models/btblv-qx-complete-precision=", 
                            precision, "-K=", K, ".rds"))
 
 data = model_fit$btblv_data
+model_fit = model_fit$btblv_fit
 
 set.seed(1)
 post_sample = model_fit %>% btblv::extract_posterior(
@@ -17,7 +18,6 @@ post_sample = model_fit %>% btblv::extract_posterior(
 )
 
 post_summ = post_sample %>% btblv::posterior_summary() 
-
 alpha = post_summ$posterior_mean$alpha
 
 alpha[, 1] %>% plot()
@@ -104,15 +104,15 @@ example_log_mortality = mu_df %>%
   ggplot(aes(x=age, y=btblv::logit(mu), color=dims)) + 
   geom_line(linewidth = 1.1) + 
   scale_x_continuous(breaks = seq(0, 110, 10)) + 
-  scale_color_manual(values = c(color_values,"black"),
-  labels = unname(c(
-    latex2exp::TeX("Max $\\theta_{i1}^{(t)}$"),
-    latex2exp::TeX("Max $\\theta_{i2}^{(t)}$"),
-    latex2exp::TeX("Max $\\theta_{i3}^{(t)}$"),
-    latex2exp::TeX("Max $\\theta_{i4}^{(t)}$"),
-    latex2exp::TeX("Max $\\theta_{i5}^{(t)}$"),
-    latex2exp::TeX("$\\beta_{x}$")
-  ))) +
+  # scale_color_manual(values = c(color_values,"black"),
+  # labels = unname(c(
+  #   latex2exp::TeX("Max $\\theta_{i1}^{(t)}$"),
+  #   latex2exp::TeX("Max $\\theta_{i2}^{(t)}$"),
+  #   latex2exp::TeX("Max $\\theta_{i3}^{(t)}$"),
+  #   latex2exp::TeX("Max $\\theta_{i4}^{(t)}$"),
+  #   latex2exp::TeX("Max $\\theta_{i5}^{(t)}$"),
+  #   latex2exp::TeX("$\\beta_{x}$")
+  # ))) +
   labs(x="Age group x", y=latex2exp::TeX("logit$(\\mu_{xit})$"), color="") 
 
 example_log_mortality
