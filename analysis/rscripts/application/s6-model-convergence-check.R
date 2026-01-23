@@ -20,7 +20,7 @@ convergence_summary = function(models_path, precision_type) {
     model_fit = readRDS(model_path)
     
     # convergence statistics 
-    conv_stats = model_fit %>% 
+    conv_stats = model_fit$btblv_fit %>% 
       btblv::extract_posterior() %>%
       btblv::check_convergence()
     
@@ -62,13 +62,13 @@ convergence_summary = function(models_path, precision_type) {
 path = "analysis/models"
 models = list.files(path)
 models_path = paste0(path, "/", models)
-models_path = models_path[stringr::str_detect( models_path, "btblv-")]
+models_path = models_path[stringr::str_detect( models_path, "qx-complete-precision")]
 models_path
 
 # single precision
 conv_summary = convergence_summary(models_path, precision_type = "single")
-conv_summary %>% saveRDS("analysis/models/convergence_summary.rds")
-conv_summary = readRDS("analysis/models/convergence_summary.rds")
+conv_summary %>% saveRDS("analysis/models/qx-convergence_summary.rds")
+conv_summary = readRDS("analysis/models/qx-convergence_summary.rds")
 
 conv_summary$rhat_summary
 conv_summary$ess_summary
@@ -84,10 +84,4 @@ conv_summary$ess_summary %>%
   select(alpha, beta, log_kappa, phi, sigma, theta) %>%
   round(2) %>%
   xtable::xtable()
-
-# specific precision
-conv_summary = convergence_summary(models_path, precision_type = "specific")
-
-conv_summary$rhat_summary
-conv_summary$ess_summary
 

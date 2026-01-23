@@ -46,7 +46,7 @@ compute_metrics = function(models_path, precision_type) {
 path = "analysis/models"
 models = list.files(path)
 models_path = paste0(path, "/", models)
-models_path = models_path[stringr::str_detect( models_path, "qx-complete-precision")]
+models_path = models_path[stringr::str_detect(models_path, "qx-incomplete-precision")]
 print(models_path)
 
 metrics_path = paste0("analysis/results/", list.files("analysis/results"))
@@ -94,11 +94,4 @@ metrics_single_prec %>%
   xtable::xtable() %>%
   print()
 
-#### specific precision ####
-metrics_specific_prec
-metrics_specific_prec$BIC %>% plot()
-metrics_specific_prec$WAIC %>% plot()
-
-metrics_single_prec$BIC %>% which.min()
-metrics_specific_prec$BIC %>% which.min()
 

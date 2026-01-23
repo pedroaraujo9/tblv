@@ -3,10 +3,20 @@ library(latex2exp)
 library(patchwork)
 library(viridis)
 
+plot_alpha = function(alpha) {
+  as.data.frame(alpha) %>%
+    mutate(i = 1:nrow(.)) %>%
+    gather(k, alpha, -i) %>%
+    mutate(k = k %>% str_extract("\\d{1,10}") %>% as.integer()) %>%
+    ggplot(aes(x=i, y=alpha, color=factor(k))) +
+    geom_line() + 
+    geom_point()
+}
+
 #### model ####
 K = 6
 precision = "single"
-model_fit = readRDS(paste0("analysis/models/btblv-qx-complete-precision=", 
+model_fit = readRDS(paste0("analysis/models/btblv-qx-incomplete-precision=", 
                            precision, "-K=", K, ".rds"))
 
 data = model_fit$btblv_data
@@ -19,6 +29,7 @@ post_sample = model_fit %>% btblv::extract_posterior(
 
 post_summ = post_sample %>% btblv::posterior_summary() 
 alpha = post_summ$posterior_mean$alpha
+plot_alpha(alpha)
 
 alpha[, 1] %>% plot()
 alpha[, 2] %>% plot()
@@ -27,8 +38,9 @@ alpha[, 4] %>% plot()
 alpha[, 5] %>% plot()
 alpha[, 6] %>% plot()
 
-alpha[, 3] = -alpha[, 3]
-#alpha[, 1] = -alpha[, 1]
+for(k in c(1, 3, 4, 6)) {
+  alpha[, k] = -alpha[, k]
+}
 
 post_sample = model_fit %>% btblv::extract_posterior(
   alpha_reference = alpha, apply_varimax = FALSE
@@ -198,8 +210,10 @@ data.frame(
   scale_color_manual(values = c("black", "white")) + 
   labs(x = expression(log(sigma[i])), y=expression(logit(phi[i])), 
        fill=expression(N[i])) + 
-  scale_y_continuous(labels = paste0("logit(", btblv::inv_logit(c(1, 2, 3, 4)) %>% round(2), ")")) +
-  scale_x_continuous(labels = paste0("log(", exp(c(-2.25, -2.00, -1.75, -1.5, -1.25)) %>% round(2), ")"))
+  scale_y_continuous(labels = paste0("logit(", btblv::inv_logit(c(1, 2, 3)) %>% round(2), ")"), 
+                     breaks = c(1, 2, 3)) +
+  scale_x_continuous(labels = paste0("log(", exp(c(-2.5, -2.25, -2, -1.75)) %>% round(2), ")"),
+                     breaks = c(-2.5, -2.25, -2, -1.75))
 
 ggsave("analysis/plots/sigma_phi_est.pdf", width = 5.5, height = 3)
 

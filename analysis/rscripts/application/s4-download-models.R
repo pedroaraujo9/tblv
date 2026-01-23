@@ -18,7 +18,7 @@ models = googledrive::drive_ls(path = as_id(gdrive_folder_id)) %>%
   dplyr::arrange(name)
 
 models = models %>%
-  filter(str_detect(name, "btblv-qx-complete"))
+  filter(str_detect(name, "btblv-qx-incomplete"))
 
 models
 

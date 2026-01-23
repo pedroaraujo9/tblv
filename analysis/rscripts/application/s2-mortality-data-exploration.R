@@ -44,10 +44,10 @@ ggsave("analysis/plots/mortality_data_availability.pdf", width = 8, height = 4)
 #### some mortality curves ####
 life_tables %>%
   filter(year %in% c(1950, 1980, 2000, 2015)) %>%
-  ggplot(aes(x=age, y=log(mx), group=ind, color=factor(year))) +
+  ggplot(aes(x=age, y=logit(qx), group=ind, color=factor(year))) +
   geom_line(alpha=0.4) +
   scale_color_viridis(discrete = T) +
-  labs(x="Age group", y=expression(log(m[xit])), color="Year")
+  labs(x="Age group", y=expression(logit(q[xit])), color="Year")
 
 ggsave("analysis/plots/mortality_curves_original_log_scale.pdf", width = 4.5, height = 2.5)
 
@@ -56,7 +56,7 @@ life_tables %>%
   ggplot(aes(x=age, y=mx, group=ind, color=factor(year))) +
   geom_line(alpha=0.4) +
   scale_color_viridis(discrete = T) +
-  labs(x="Age group", y=expression(m[xit]), color="Year")
+  labs(x="Age group", y=expression(q[xit]), color="Year")
 
 ggsave("analysis/plots/mortality_curves_original_scale.pdf", width = 4.5, height = 2.5)
 
@@ -64,7 +64,7 @@ life_tables %>%
   filter(country=="Ireland") %>%
   ggplot(aes(x=age, y=mx, group=ind, color=year)) +
   geom_line() +
-  labs(x="Age group", y=expression(m[xit]), color="Year:") +
+  labs(x="Age group", y=expression(q[xit]), color="Year:") +
   scale_color_viridis()  +
   theme(text = element_text(size = 12))
 
@@ -72,8 +72,9 @@ ggsave("analysis/plots/ireland_mortality_curves.pdf", width = 4.5, height = 2.5)
 
 #### correlation matrix ####
 life_tables %>%
-  select(country, year, age, mx) %>%
-  spread(age, mx) %>%
+  select(country, year, age, qx) %>%
+  filter(age < 110) %>%
+  spread(age, qx) %>%
   select(-country, -year) %>%
   as.matrix() %>%
   logit() %>%
@@ -106,14 +107,15 @@ get_tau = function(mx) {
 }
 
 tau_over_time = life_tables %>%
-  select(country, age, year, mx) %>%
+  select(country, age, year, qx) %>%
+  filter(age < 110) %>%
   arrange(country, year, age) %>%
   group_by(country, age) %>%
-  summarise(tau = get_tau(mx))
+  summarise(tau = get_tau(qx))
 
 tau_over_time %>%
   ggplot(aes(x=factor(age), y=country, fill=tau)) +
-  geom_tile(color="white") +
+  geom_tile(color="black") +
   scale_fill_viridis() +
   labs(x="Age group", y="Country", fill=expression(tau))
 
