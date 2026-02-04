@@ -6,15 +6,11 @@ library(EnvStats)
 
 
 #### HMD data from package btblv ####
-lf = readRDS("analysis/data/data_model.rds")
+lf = readRDS("analysis/data/model_data_incomplete.rds")
 
 life_tables = lf %>%
-  filter(year %in% seq(1950, 2015, 5)) %>%
-  filter(!(country %in% c("East Germany", "West Germany", "New Zealand Maori",
-                          "New Zealand Non-Maori", "England and Wales (Total Population)",
-                          "England and Wales (Civilian Population)",
-                          "Scotland", "Northern Ireland", "Wales"))) %>%
-  mutate(ind = paste0(country, "-", year))
+  mutate(ind = paste0(country, "-", year)) %>%
+  filter(age < 110)
 
 life_tables$mx %>% summary()
 life_tables$qx %>% summary()
@@ -53,7 +49,7 @@ ggsave("analysis/plots/mortality_curves_original_log_scale.pdf", width = 4.5, he
 
 life_tables %>%
   filter(year %in% c(1950, 1980, 2000, 2015)) %>%
-  ggplot(aes(x=age, y=mx, group=ind, color=factor(year))) +
+  ggplot(aes(x=age, y=qx, group=ind, color=factor(year))) +
   geom_line(alpha=0.4) +
   scale_color_viridis(discrete = T) +
   labs(x="Age group", y=expression(q[xit]), color="Year")
@@ -120,3 +116,4 @@ tau_over_time %>%
   labs(x="Age group", y="Country", fill=expression(tau))
 
 ggsave("analysis/plots/tau_trend.pdf", width = 8, height = 6.5)
+
