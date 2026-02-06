@@ -15,7 +15,7 @@ correct_bic = function(fit) {
   -2*L + num_param*log(n)
 }
 
-sim_study_path = "analysis/models/simulation-study"
+sim_study_path = "analysis/models/simulation-qx"
 models = list.files(sim_study_path)
 models = models[str_detect(models, "btblv-trueK")]
 models = file.path(sim_study_path, models)

@@ -149,6 +149,7 @@ btblv_fit_single = readRDS(
   paste0("analysis/models/btblv-qx-incomplete-precision=single-K=", K, ".rds")
 )
 
+imifa_fit %>% IMIFA::get_IMIFA_results()
 
 imifa_post = imifa_fit %>% IMIFA::get_IMIFA_results(Q = K) 
 post_bfa = btblv::imifa_to_blv(
@@ -157,7 +158,10 @@ post_bfa = btblv::imifa_to_blv(
   trans_func = logit
 )
 
-single_pred = btblv_fit_single$btblv_fit %>% extract_posterior() %>% posterior_predict(seed = 1)
+single_pred = btblv_fit_single$btblv_fit %>% 
+  extract_posterior() %>% 
+  posterior_predict(seed = 1)
+
 bfa_pred = post_bfa %>% posterior_predict(seed = 1, inv_trans_func = inv_logit)
 
 avg_preds = single_pred$pred_post_summary_df %>%
@@ -174,7 +178,7 @@ avg_preds %>%
   filter(item %in% c(0, 20, 45, 100)) %>%
   mutate(item = paste0("Age group: ", item) %>% factor(levels = paste0(paste0("Age group: ", unique(item))))) %>%
   gather(model, avg, -item, -time) %>%
-  ggplot(aes(x=time, y=log(avg), color=model)) + 
+  ggplot(aes(x=time, y=avg, color=model)) + 
   geom_point() + 
   geom_line() + 
   facet_wrap(. ~ item, scales = "free") + 
@@ -191,6 +195,5 @@ avg_preds %>%
   geom_line() + 
   facet_wrap(. ~ item, scales = "free", ncol = 4) + 
   labs(x="Year", y="Average mortality", color="Model")
-
 
 ggsave("analysis/plots/pred_post_rest.pdf", width = 11, height = 7)

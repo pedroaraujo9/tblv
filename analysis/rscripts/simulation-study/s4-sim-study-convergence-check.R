@@ -32,7 +32,7 @@ get_convergence_info = function(model_path) {
       rhat_q95 = quantile(.x$rhat, 0.95),
       rhat_q99 = quantile(.x$rhat, 0.99),
       rhat_max = max(.x$rhat),
-      prop_ess = mean(.x$ess < 100),
+      prop_ess = mean(.x$ess < 30),
       ess_q10 = quantile(.x$ess, 0.1),
       ess_q5 = quantile(.x$ess, 0.05),
       ess_q1 = quantile(.x$ess, 0.01),
@@ -46,66 +46,19 @@ get_convergence_info = function(model_path) {
   }) %>% do.call(rbind, .)
 }
 
-sim_study_path = "analysis/models/simulation-study"
+sim_study_path = "analysis/models/simulation-qx"
 models = list.files(sim_study_path)
 models = models[str_detect(models, "btblv-trueK")]
 models = file.path(sim_study_path, models)
-models
+print(models)
 
-
-cluster = makeCluster(5)
-registerDoParallel(cluster)
-
-sim_conv_check = foreach::foreach(
-  model_path = models, 
-  .combine = rbind, 
-  .packages = c("btblv", "tidyverse")
-) %do% {
+sim_conv_check = lapply(models, function(model_path){
   get_convergence_info(model_path)
-}
+})
 
 saveRDS(sim_conv_check, file = "analysis/results/sim-conv-check.rds")
 
 sim_conv_check = readRDS("analysis/results/sim-conv-check.rds")
-
-greek_labs = c(
-  "alpha" = "alpha", 
-  "beta" = "beta", 
-  "theta" = "theta",
-  "log_kappa" = "log kappa", 
-  "phi" = "varphi", 
-  "sigma" = "sigma"
-)
-
-sim_conv_check %>% 
-  select(param, repl, trueK, K, rhat_q99, rhat_max, prop_rhat) %>%
-  as_tibble() %>%
-  filter(param %in% c("alpha", "beta", "log_kappa", "sigma", "phi","theta")) %>%
-  mutate(trueK = paste0("True K = ", trueK)) %>%
-  ggplot(aes(x = factor(K), y = rhat_q99)) +
-  geom_jitter(width = 0.15, alpha = 0.5) +
-  facet_wrap(trueK ~ param, scales = "free", labeller = as_labeller(greek_labs), ncol = 3) + 
-  labs(x = "Fitted K", y = "99th percentile of R-hat") 
-
-ggsave("analysis/plots/sim-study-rhat-q99.pdf", width = 8, height = 8)
-
-sim_conv_check %>% 
-  select(param, repl, trueK, K, ess_q1, rhat_max, prop_rhat) %>%
-  as_tibble() %>%
-  filter(param %in% c("alpha", "beta", "log_kappa", "sigma", "phi","theta")) %>%
-  mutate(trueK = paste0("True K = ", trueK)) %>%
-  ggplot(aes(x = factor(K), y = ess_q1)) +
-  geom_jitter(width = 0.15, alpha = 0.5) +
-  facet_wrap(trueK ~ param, scales = "free", labeller = greek_labs, ncol = 3) + 
-  labs(x = "Fitted K", y = "1st percentile of ESS")
-
-ggsave("analysis/plots/sim-study-ess-q1.pdf", width = 8, height = 8, device = cairo_pdf)
-
-
-
-
-
-
 
 # Corrected Greek label list 
 greek_labs = c(
@@ -158,6 +111,7 @@ custom_labeller_fixed <- function(labels) {
 }
 
 sim_conv_check %>% 
+  do.call(rbind, .) %>%
   select(param, repl, trueK, K, rhat_q99, rhat_max, prop_rhat) %>%
   as_tibble() %>%
   filter(param %in% c("alpha", "beta", "log_kappa", "sigma", "phi","theta")) %>%
@@ -175,17 +129,18 @@ sim_conv_check %>%
 ggsave("analysis/plots/sim-study-rhat-q99.pdf", width = 8, height = 8)
 
 sim_conv_check %>% 
+  do.call(rbind, .) %>%
   select(param, repl, trueK, K, ess_q1, rhat_max, prop_rhat) %>%
   as_tibble() %>%
   filter(param %in% c("alpha", "beta", "log_kappa", "sigma", "phi","theta")) %>%
   mutate(trueK = paste0("True K = ", trueK)) %>%
-  ggplot(aes(x = factor(K), y = ess_q1)) +
+  ggplot(aes(x = factor(K), y = log(ess_q1))) +
   geom_jitter(width = 0.15, alpha = 0.5) +
   facet_wrap(trueK ~ param, 
              scales = "free", 
              labeller = custom_labeller_fixed, 
              ncol = 3) + 
-  labs(x = "Fitted K", y = "1st percentile of ESS")
+  labs(x = "Fitted K", y = "1st percentile of ESS (log scale)")
 
 ggsave("analysis/plots/sim-study-ess-q1.pdf", width = 8, height = 8)
 

@@ -28,7 +28,7 @@ convergence_summary = function(models_path, precision_type) {
     prop_bad = lapply(names(conv_stats), function(param){
       data.frame(
         rhat = mean(conv_stats[[param]]$rhat > 1.1),
-        ess = mean(conv_stats[[param]]$ess < 10),
+        ess = mean(conv_stats[[param]]$ess < 30),
         param = param,
         K = k
       )
@@ -62,7 +62,7 @@ convergence_summary = function(models_path, precision_type) {
 path = "analysis/models"
 models = list.files(path)
 models_path = paste0(path, "/", models)
-models_path = models_path[stringr::str_detect( models_path, "qx-complete-precision")]
+models_path = models_path[stringr::str_detect( models_path, "qx-incomplete-precision")]
 models_path
 
 # single precision
