@@ -3,13 +3,24 @@ library(latex2exp)
 library(patchwork)
 library(viridis)
 
+plot_alpha = function(alpha) {
+  as.data.frame(alpha) %>%
+    mutate(i = 1:nrow(.)) %>%
+    gather(k, alpha, -i) %>%
+    mutate(k = k %>% str_extract("\\d{1,10}") %>% as.integer()) %>%
+    ggplot(aes(x=i, y=alpha, color=factor(k))) +
+    geom_line() + 
+    geom_point()
+}
+
 #### model ####
-K = 4
+K = 6
 precision = "single"
-model_fit = readRDS(paste0("analysis/models/btblv-precision=", 
+model_fit = readRDS(paste0("analysis/models/btblv-qx-incomplete-precision=", 
                            precision, "-K=", K, ".rds"))
 
 data = model_fit$btblv_data
+model_fit = model_fit$btblv_fit
 
 set.seed(1)
 post_sample = model_fit %>% btblv::extract_posterior(
@@ -17,15 +28,19 @@ post_sample = model_fit %>% btblv::extract_posterior(
 )
 
 post_summ = post_sample %>% btblv::posterior_summary() 
-
 alpha = post_summ$posterior_mean$alpha
+plot_alpha(alpha)
 
 alpha[, 1] %>% plot()
 alpha[, 2] %>% plot()
 alpha[, 3] %>% plot()
 alpha[, 4] %>% plot()
+alpha[, 5] %>% plot()
+alpha[, 6] %>% plot()
 
-alpha[, 3] = -alpha[, 3]
+for(k in c(1, 3, 4, 6)) {
+  alpha[, k] = -alpha[, k]
+}
 
 post_sample = model_fit %>% btblv::extract_posterior(
   alpha_reference = alpha, apply_varimax = FALSE
@@ -47,6 +62,15 @@ bp
 post_summ$posterior_summary_df$log_kappa %>% round(3)
 
 #### alpha ####
+color_values = c(
+  "firebrick3", 
+  "cornflowerblue", 
+  "darkolivegreen3",
+  "goldenrod2",
+  "mediumpurple3", 
+  "darkcyan"
+)
+
 ap = post_summ$posterior_summary_df$alpha %>%
   ggplot(aes(x=age, y=mean, color=factor(K), fill=factor(K))) + 
   geom_ribbon(aes(x=age, ymin=li, ymax=ui, fill=factor(K)), alpha=0.4, 
@@ -56,11 +80,8 @@ ap = post_summ$posterior_summary_df$alpha %>%
   geom_hline(yintercept = 0, linetype=2, alpha=0.8) + 
   scale_x_continuous(breaks = seq(0, 110, 10)) + 
   labs(x = "Age group x", color="Dim", fill="Dim", y=latex2exp::TeX("$\\alpha_{xk}$")) +
-  scale_color_manual(values = c("chocolate1", "cornflowerblue", 
-                                "darkolivegreen4","deeppink4"
-  )) + 
-  scale_fill_manual(values = c("chocolate1", "cornflowerblue", 
-                               "darkolivegreen4","deeppink4")) + 
+  scale_color_manual(values = color_values) +
+  scale_fill_manual(values = color_values) +
   theme(text = element_text(size = 15))
 
 ap
@@ -93,18 +114,17 @@ mu_df = mu_df %>%
 
 example_log_mortality = mu_df %>% 
   ggplot(aes(x=age, y=btblv::logit(mu), color=dims)) + 
-  geom_line() + 
+  geom_line(linewidth = 1.1) + 
   scale_x_continuous(breaks = seq(0, 110, 10)) + 
-  scale_color_manual(values = c("chocolate1", "cornflowerblue", 
-                                "darkolivegreen4","deeppink4", "black"
-  ),
-  labels = unname(c(
-    latex2exp::TeX("Max $\\theta_{i1}^{(t)}$"),
-    latex2exp::TeX("Max $\\theta_{i2}^{(t)}$"),
-    latex2exp::TeX("Max $\\theta_{i3}^{(t)}$"),
-    latex2exp::TeX("Max $\\theta_{i4}^{(t)}$"),
-    latex2exp::TeX("$\\beta_{x}$")
-  ))) +
+  # scale_color_manual(values = c(color_values,"black"),
+  # labels = unname(c(
+  #   latex2exp::TeX("Max $\\theta_{i1}^{(t)}$"),
+  #   latex2exp::TeX("Max $\\theta_{i2}^{(t)}$"),
+  #   latex2exp::TeX("Max $\\theta_{i3}^{(t)}$"),
+  #   latex2exp::TeX("Max $\\theta_{i4}^{(t)}$"),
+  #   latex2exp::TeX("Max $\\theta_{i5}^{(t)}$"),
+  #   latex2exp::TeX("$\\beta_{x}$")
+  # ))) +
   labs(x="Age group x", y=latex2exp::TeX("logit$(\\mu_{xit})$"), color="") 
 
 example_log_mortality
@@ -135,9 +155,9 @@ post_summ$posterior_summary_df$theta %>%
   ggplot(aes(x=year, y=mean, group=country, color=sel_country, alpha = sel_alpha)) + 
   geom_line() + 
   geom_hline(yintercept = 0, linetype = "dashed") + 
-  scale_alpha_manual(values = c(0.16, 1), guide = "none") + 
-  scale_color_manual(values = c("chartreuse3", "red", "black", "blue")) + 
-  scale_fill_manual(values = c("chartreuse3", "red", "black", "blue", "grey")) + 
+  scale_alpha_manual(values = c(0.80, 1), guide = "none") + 
+  scale_color_manual(values = c("chartreuse3", "red", "grey", "blue")) + 
+  scale_fill_manual(values = c("chartreuse3", "red", "grey", "blue", "grey")) + 
   facet_wrap(K ~ ., scales = "free_y") + 
   labs(x="Year", y=latex2exp::TeX("$\\theta_{ik}^{(t)}$"), color="Country:") +
   theme(legend.position = "top", text = element_text(size = 9))
@@ -190,8 +210,10 @@ data.frame(
   scale_color_manual(values = c("black", "white")) + 
   labs(x = expression(log(sigma[i])), y=expression(logit(phi[i])), 
        fill=expression(N[i])) + 
-  scale_y_continuous(labels = paste0("logit(", btblv::inv_logit(c(1, 2, 3, 4)) %>% round(2), ")")) +
-  scale_x_continuous(labels = paste0("log(", exp(c(-2.25, -2.00, -1.75, -1.5, -1.25)) %>% round(2), ")"))
+  scale_y_continuous(labels = paste0("logit(", btblv::inv_logit(c(1, 2, 3)) %>% round(2), ")"), 
+                     breaks = c(1, 2, 3)) +
+  scale_x_continuous(labels = paste0("log(", exp(c(-2.5, -2.25, -2, -1.75)) %>% round(2), ")"),
+                     breaks = c(-2.5, -2.25, -2, -1.75))
 
 ggsave("analysis/plots/sigma_phi_est.pdf", width = 5.5, height = 3)
 

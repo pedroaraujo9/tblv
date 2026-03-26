@@ -10,5 +10,5 @@ download_models_gdrive(
   gdrive_auth_credentials = config$gdrive$auth_credentials, 
   gdrive_auth_email = config$gdrive$email, 
   gdrive_folder_id = config$gdrive$simulation_folder_id, 
-  local_folder_path = "analysis/models/simulation-study"
+  local_folder_path = "analysis/models/simulation-qx"
 )

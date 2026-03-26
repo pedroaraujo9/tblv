@@ -1,11 +1,27 @@
 library(tidyverse)
 library(latex2exp)
 
-sim_study_path = "analysis/models/simulation-study"
+correct_bic = function(fit) {
+  
+  data_list_stan = fit$btblv_fit$btblv_data$data_list_stan
+  
+  n = data_list_stan$n
+  J = data_list_stan$J
+  K = data_list_stan$K
+  Ng = data_list_stan$Ng
+  L = sum(fit$metrics$appx$mloglike)
+  num_param = J*K + J + 2*Ng + 1
+  
+  -2*L + num_param*log(n)
+}
+
+sim_study_path = "analysis/models/simulation-qx"
 models = list.files(sim_study_path)
 models = models[str_detect(models, "btblv-trueK")]
 models = file.path(sim_study_path, models)
 models
+
+print(models)
 
 sim_study_metrics = purrr:::map_df(models, ~{
   
@@ -30,7 +46,7 @@ sim_study_metrics = purrr:::map_df(models, ~{
   log_kappa = post_summ$posterior_mean$log_kappa
   
   data.frame(
-    MCMBIC = fit$metrics$bic, 
+    MCMBIC = correct_bic(fit), 
     WAIC = fit$metrics$waic$waic, 
     log_kappa = log_kappa,
     repl = repl,
@@ -49,6 +65,8 @@ sim_study_metrics_tidy = sim_study_metrics %>%
                                             "log_kappa")), 
          trueK = factor(trueK)) %>%
   as_tibble()
+
+sim_study_metrics_tidy
 
 # selected model 
 sim_study_metrics_tidy %>%
@@ -83,6 +101,7 @@ sim_study_metrics_tidy %>%
   geom_point(alpha=0.4) + 
   facet_wrap(trueK ~ metric, scales = "free", labeller = label_parsed) + 
   labs(x="K", y="Metric value")
+
 ggsave("analysis/plots/simulation-study/sim_study_model_choice.pdf", width = 7.5, height = 4)
 
 sim_study_metrics_tidy %>%

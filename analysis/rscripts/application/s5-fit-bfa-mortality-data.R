@@ -2,18 +2,14 @@ library(IMIFA)
 library(tidyverse)
 library(btblv)
 
-lf = readRDS("analysis/data/data_model.rds")
+model_data = readRDS("analysis/data/btblv_incomplete_data_qx.rds")
 
-data = btblv::create_btblv_data(df = lf,
-                                resp_col_name = "mx",
-                                item_col_name = "age",
-                                group_col_name = "country",
-                                time_col_name = "year")
-
-log_mx = data$data_list_stan$x %>% log()
+logit_qx = model_data$data_list_stan$x %>% logit()
 
 bfa_fit = mcmc_IMIFA(
-  log_mx, method = "FA", range.Q=1:10,
+  logit_qx, 
+  method = "FA", 
+  range.Q=1:10,
   mixFA = mixfaControl(
     n.iters = 50000,
     burnin = 20000,
@@ -23,5 +19,6 @@ bfa_fit = mcmc_IMIFA(
   ) 
 )
 
-saveRDS(bfa_fit, "analysis/models/bfa-K=1-10.rds")
-
+saveRDS(bfa_fit, "analysis/models/qx-bfa-K=1-10.rds")
+bfa_post = bfa_fit %>% IMIFA::get_IMIFA_results()
+bfa_post

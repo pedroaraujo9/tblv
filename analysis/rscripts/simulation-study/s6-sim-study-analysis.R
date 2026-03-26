@@ -15,7 +15,7 @@ sim_data_list[[2]] = sim_data = readRDS("analysis/data/sim_data_2.rds")
 sim_data_list[[4]] = sim_data = readRDS("analysis/data/sim_data_4.rds")
 
 #### models path ####
-models_folder = "analysis/models/simulation-study"
+models_folder = "analysis/models/simulation-qx"
 models_path = list.files(models_folder) %>% file.path(models_folder, .)
 models_path
 
@@ -289,7 +289,7 @@ sim_theta_plot = sim_study_df %>%
   group_by(trueK, country, year) %>%
   mutate(trueK = paste0("True K = ", trueK)) %>%
   ggplot(aes(x=mean, y=true_value)) + 
-  geom_point() + 
+  ggrastr::rasterise(geom_point()) + 
   facet_wrap(. ~ trueK, scales="free") + 
   geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
   labs(x = latex2exp::TeX("Estimates for $\\theta_{ik}^{(t)}$"),
@@ -303,7 +303,6 @@ sim_alpha_plot / sim_theta_plot
 ggsave("analysis/plots/simulation-study/sim_alpha_theta.pdf", width = 5.5, height = 4)
 
 # linerange 
-
 theta = sim_study_df %>%
   filter(param %in% c("theta")) %>%
   mutate(trueK = paste0("true K = ", trueK), K = paste0("Dimension ", K)) %>%
@@ -479,7 +478,7 @@ phi_sigma %>%
   facet_wrap(param ~ trueK, scales = "free", labeller = label_parsed) + 
   theme(text=element_text(size = 14)) + 
   coord_flip() + 
-  scale_color_manual(values = c("red", viridis(8))) + 
+  scale_color_manual(values = c("red", viridis::viridis(8))) + 
   geom_point(aes(x=country_label, y=true_value, color=type), inherit.aes = F, size=2, color="red") +
   scale_x_discrete(breaks = c(1, 10, 20, 30, 40) %>% as.character()) + 
   theme(text = element_text(size = 22))
