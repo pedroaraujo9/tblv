@@ -155,9 +155,9 @@ post_summ$posterior_summary_df$theta %>%
   ggplot(aes(x=year, y=mean, group=country, color=sel_country, alpha = sel_alpha)) + 
   geom_line() + 
   geom_hline(yintercept = 0, linetype = "dashed") + 
-  scale_alpha_manual(values = c(0.16, 1), guide = "none") + 
-  scale_color_manual(values = c("chartreuse3", "red", "black", "blue")) + 
-  scale_fill_manual(values = c("chartreuse3", "red", "black", "blue", "grey")) + 
+  scale_alpha_manual(values = c(0.80, 1), guide = "none") + 
+  scale_color_manual(values = c("chartreuse3", "red", "grey", "blue")) + 
+  scale_fill_manual(values = c("chartreuse3", "red", "grey", "blue", "grey")) + 
   facet_wrap(K ~ ., scales = "free_y") + 
   labs(x="Year", y=latex2exp::TeX("$\\theta_{ik}^{(t)}$"), color="Country:") +
   theme(legend.position = "top", text = element_text(size = 9))

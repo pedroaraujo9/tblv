@@ -179,10 +179,10 @@ avg_preds %>%
   mutate(item = paste0("Age group: ", item) %>% factor(levels = paste0(paste0("Age group: ", unique(item))))) %>%
   gather(model, avg, -item, -time) %>%
   ggplot(aes(x=time, y=avg, color=model)) + 
-  geom_point() + 
+  geom_point(aes(shape=model)) + 
   geom_line() + 
   facet_wrap(. ~ item, scales = "free") + 
-  labs(x="Year", y="Average mortality", color="Model")
+  labs(x="Year", y="Average mortality", color="Model", shape = "Model")
 
 ggsave("analysis/plots/pred_post.pdf", width = 5.5, height = 2.9)
 

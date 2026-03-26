@@ -289,7 +289,7 @@ sim_theta_plot = sim_study_df %>%
   group_by(trueK, country, year) %>%
   mutate(trueK = paste0("True K = ", trueK)) %>%
   ggplot(aes(x=mean, y=true_value)) + 
-  geom_point() + 
+  ggrastr::rasterise(geom_point()) + 
   facet_wrap(. ~ trueK, scales="free") + 
   geom_abline(intercept = 0, slope = 1, linetype="dashed", color="red") + 
   labs(x = latex2exp::TeX("Estimates for $\\theta_{ik}^{(t)}$"),
