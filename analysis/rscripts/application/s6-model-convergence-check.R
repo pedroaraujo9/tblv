@@ -27,8 +27,8 @@ convergence_summary = function(models_path, precision_type) {
     # bad ones for each class of parameters
     prop_bad = lapply(names(conv_stats), function(param){
       data.frame(
-        rhat = mean(conv_stats[[param]]$rhat > 1.1),
-        ess = mean(conv_stats[[param]]$ess < 30),
+        rhat = max(conv_stats[[param]]$rhat),
+        ess = min(conv_stats[[param]]$ess),
         param = param,
         K = k
       )
@@ -67,11 +67,21 @@ models_path
 
 # single precision
 conv_summary = convergence_summary(models_path, precision_type = "single")
-conv_summary %>% saveRDS("analysis/models/qx-convergence_summary.rds")
-conv_summary = readRDS("analysis/models/qx-convergence_summary.rds")
+conv_summary %>% saveRDS("analysis/models/qx-convergence_summary2.rds")
+conv_summary = readRDS("analysis/models/qx-convergence_summary2.rds")
 
 conv_summary$rhat_summary
 conv_summary$ess_summary
+
+
+conv_summary$rhat_summary %>%
+  gather(param, rhat, -K) %>%
+  summarise(max(rhat))
+
+conv_summary$ess_summary %>%
+  gather(param, ess, -K) %>%
+  summarise(min(ess))
+
 
 conv_summary$rhat_summary %>%
   as.data.frame() %>%
