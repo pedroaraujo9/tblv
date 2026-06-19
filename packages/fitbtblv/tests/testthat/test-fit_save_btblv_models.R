@@ -19,7 +19,7 @@ test_that("inputs", {
   if(file.exists("config.yaml")) {
 
     fit_save_btblv_models(
-      K_max = 2,
+      K = 1:2,
       cluster_run = FALSE,
       job_cores = NULL,
       job_email = NULL,
@@ -54,7 +54,7 @@ test_that("inputs", {
   }
 
   fit_save_btblv_models(
-    K_max = 2,
+    K = 1:2,
     cluster_run = FALSE,
     job_cores = NULL,
     job_email = NULL,

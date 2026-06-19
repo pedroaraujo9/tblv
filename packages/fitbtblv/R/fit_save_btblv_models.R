@@ -4,7 +4,8 @@
 #' for BTBLV data either locally or on a computing cluster. The script is
 #' generated dynamically based on user-specified parameters.
 #'
-#' @param K_max Integer. The maximum number of clusters to consider.
+#' @param K Integer vector. The numbers of clusters to fit models for. Can be a
+#'   single value or a vector of values.
 #' @param cluster_run Logical. If `TRUE`, the script is executed on a cluster using `sbatch`.
 #' @param job_cores Integer. Number of cores to allocate for the job. Only applicable for cluster runs.
 #' @param job_email Character. Email address for job notifications. Only applicable for cluster runs.
@@ -34,7 +35,7 @@
 #' @examples
 #' \dontrun{
 #'   fit_save_btblv_models(
-#'     K_max = 5,
+#'     K = 1:5,
 #'     cluster_run = TRUE,
 #'     job_cores = 4,
 #'     job_email = "user@example.com",
@@ -58,8 +59,7 @@
 #'
 #' @importFrom assertthat assert_that
 #' @export
-
-fit_save_btblv_models = function(K_max,
+fit_save_btblv_models = function(K,
                                  cluster_run,
                                  job_cores = NULL,
                                  job_email = NULL,
@@ -88,7 +88,7 @@ fit_save_btblv_models = function(K_max,
     job_cores = job_cores,
     job_email = job_email,
     job_name = job_name,
-    K_max = K_max,
+    K = K,
     btblv_data_path = btblv_data_path,
     iter = iter,
     warmup = warmup,

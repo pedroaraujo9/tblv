@@ -162,7 +162,8 @@
 #' @param job_cores Integer. The number of CPU cores to request for the job (required if `cluster_run = TRUE`).
 #' @param job_email Character. The email address to receive job notifications (required if `cluster_run = TRUE`).
 #' @param job_name Character. The name of the job (required if `cluster_run = TRUE`).
-#' @param K_max Integer. The maximum number of clusters to fit models for.
+#' @param K Integer vector. The numbers of clusters to fit models for. Can be a
+#'   single value or a vector of values.
 #' @param btblv_data_path Character. The path to the data file for model fitting.
 #' @param iter Integer. The number of iterations for the MCMC sampling.
 #' @param warmup Integer. The number of warmup iterations for the MCMC sampling.
@@ -185,7 +186,7 @@
 #' # Example 1: Generate a bash script for local execution
 #' bash_script = .get_bash_script(
 #'   cluster_run = FALSE,
-#'   K_max = 5,
+#'   K = 1:5,
 #'   btblv_data_path = "/path/to/data.csv",
 #'   iter = 2000,
 #'   warmup = 1000,
@@ -207,7 +208,7 @@
 #'   job_cores = 4,
 #'   job_email = "user@example.com",
 #'   job_name = "btblv_fit",
-#'   K_max = 5,
+#'   K = 1:5,
 #'   btblv_data_path = "/path/to/data.csv",
 #'   iter = 2000,
 #'   warmup = 1000,
@@ -229,7 +230,7 @@
                             job_cores = NULL,
                             job_email = NULL,
                             job_name = NULL,
-                            K_max,
+                            K,
                             btblv_data_path,
                             iter,
                             warmup,
@@ -247,6 +248,8 @@
 
   fit_save_r_script = .libPaths()[1] |>
     paste0("/fitbtblv/fit_save_btblv_terminal.R")
+
+  K_values = paste(K, collapse = " ")
 
   r_script_args = glue::glue("
     btblv_data_path='{btblv_data_path}'
@@ -272,7 +275,7 @@
     bash_script = glue::glue("
       #!/bin/bash -l
 
-      for K in $(seq 1 {K_max})
+      for K in {K_values}
         do
           Rscript {fit_save_r_script} K=$K --args {r_script_args};
         done
@@ -303,7 +306,7 @@
       # Specifies the jobname
       #SBATCH --job-name={job_name}
 
-      for K in $(seq 1 {K_max})
+      for K in {K_values}
       do
         Rscript {fit_save_r_script} K=$K --args {r_script_args} &
       done
