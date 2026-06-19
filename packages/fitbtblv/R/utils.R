@@ -306,6 +306,8 @@
       # Specifies the jobname
       #SBATCH --job-name={job_name}
 
+      module load R;
+
       for K in {K_values}
       do
         Rscript {fit_save_r_script} K=$K --args {r_script_args} &
